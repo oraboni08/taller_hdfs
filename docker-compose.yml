@@ -1,0 +1,101 @@
+name: taller_hdfs
+
+networks:
+  hdfs-net:
+    driver: bridge
+
+volumes:
+  namenode-data:
+  datanode1-data:
+  datanode2-data:
+
+services:
+  namenode:
+    image: bde2020/hadoop-namenode:2.0.0-hadoop3.2.1-java8
+    container_name: namenode
+    hostname: namenode
+    platform: linux/amd64
+    restart: always
+    environment:
+      - CLUSTER_NAME=test
+    ports:
+      - "9870:9870" # HDFS Web UI
+    env_file:
+      - ./hadoop.env
+    volumes:
+      - namenode-data:/hadoop/dfs/name
+    networks:
+      - hdfs-net
+
+  datanode1:
+    image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
+    container_name: datanode1
+    hostname: datanode1
+    platform: linux/amd64
+    restart: always
+    environment:
+      - SERVICE_PRECONDITION=namenode:9000
+    env_file:
+      - ./hadoop.env
+    volumes:
+      - datanode1-data:/hadoop/dfs/data
+    networks:
+      - hdfs-net
+
+  datanode2:
+    image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
+    container_name: datanode2
+    hostname: datanode2
+    platform: linux/amd64
+    restart: always
+    environment:
+      - SERVICE_PRECONDITION=namenode:9000
+    env_file:
+      - ./hadoop.env
+    volumes:
+      - datanode2-data:/hadoop/dfs/data
+    networks:
+      - hdfs-net
+
+  resourcemanager:
+    image: bde2020/hadoop-resourcemanager:2.0.0-hadoop3.2.1-java8
+    container_name: resourcemanager
+    hostname: resourcemanager
+    platform: linux/amd64
+    restart: always
+    environment:
+      - SERVICE_PRECONDITION=namenode:9000
+    ports:
+      - "8088:8088" # YARN Resource Manager Web UI
+    env_file:
+      - ./hadoop.env
+    networks:
+      - hdfs-net
+
+  nodemanager:
+    image: bde2020/hadoop-nodemanager:2.0.0-hadoop3.2.1-java8
+    container_name: nodemanager
+    hostname: nodemanager
+    platform: linux/amd64
+    restart: always
+    environment:
+      - SERVICE_PRECONDITION=namenode:9000 resourcemanager:8088
+    env_file:
+      - ./hadoop.env
+    networks:
+      - hdfs-net
+
+  client:
+    image: bde2020/hadoop-base:2.0.0-hadoop3.2.1-java8
+    container_name: client
+    hostname: client
+    platform: linux/amd64
+    tty: true
+    stdin_open: true
+    command: ["tail", "-f", "/dev/null"]
+    env_file:
+      - ./hadoop.env
+    volumes:
+      - .:/workspace
+    networks:
+      - hdfs-net
