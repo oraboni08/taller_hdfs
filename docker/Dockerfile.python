@@ -1,0 +1,12 @@
+# Agrega Python 3 a una imagen bde2020 (Debian 9 "stretch").
+# Se usa para el cliente y para los NodeManagers: con Hadoop Streaming
+# los mappers/reducers de Python se ejecutan DENTRO de los NodeManagers.
+ARG BASE_IMAGE
+FROM ${BASE_IMAGE}
+
+RUN echo "deb http://archive.debian.org/debian stretch main" > /etc/apt/sources.list \
+ && echo "deb http://archive.debian.org/debian-security stretch/updates main" >> /etc/apt/sources.list \
+ && echo 'Acquire::Check-Valid-Until "false";' > /etc/apt/apt.conf.d/99no-check-valid-until \
+ && apt-get update \
+ && apt-get install -y --no-install-recommends python3 \
+ && rm -rf /var/lib/apt/lists/*

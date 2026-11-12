@@ -1,119 +1,74 @@
-# Clúster de Hadoop en Docker & Trabajos MapReduce con Python
+# Taller HDFS + Hadoop MapReduce con Docker
 
-Este proyecto implementa un entorno de desarrollo distribuido Big Data para Apache Hadoop 3.2.1 (HDFS + YARN) contenedorizado con Docker Compose. Está optimizado para ejecutarse sin conflictos de arquitectura tanto en **macOS (Apple Silicon M1/M2/M3)** mediante la emulación `linux/amd64` (Rosetta 2), como en **Windows (WSL2 / Docker Desktop)**.
+Clúster Hadoop 3.2.1 (HDFS + YARN) en Docker Compose, con 3 trabajos MapReduce en Python
+(Hadoop Streaming), validación de resultados y pruebas de tolerancia a fallos.
 
----
+> Guía completa paso a paso (conceptos, comandos y resultados esperados):
+> [`docs/guia_taller_hdfs.html`](docs/guia_taller_hdfs.html) — descargar y abrir en el navegador.
 
-## 🏛️ Arquitectura del Clúster
+## Arquitectura
 
-El clúster está integrado por 6 contenedores interconectados bajo una red privada dedicada (`hdfs-net`):
+| Contenedor | Rol | Web |
+|---|---|---|
+| `namenode` | HDFS: guarda el "índice" (qué bloques forman cada archivo y en qué nodo están) | http://localhost:9870 |
+| `datanode1`, `datanode2` | HDFS: guardan los bloques. Replicación = 2 (cada bloque vive en ambos) | — |
+| `resourcemanager` | YARN: reparte memoria/CPU y decide dónde corre cada tarea | http://localhost:8088 |
+| `nodemanager1`, `nodemanager2` | YARN: ejecutan las tareas map/reduce (traen Python 3) | — |
+| `historyserver` | YARN Timeline: historial de aplicaciones terminadas | http://localhost:8188 |
+| `client` | Desde aquí se dan los comandos `hdfs`, `yarn`, `hadoop jar` | — |
 
-- **NameNode**: Administrador del sistema de archivos distribuido (HDFS), encargado de gestionar la metainformación y bloques de datos.
-- **DataNode 1 & DataNode 2**: Nodos de almacenamiento físico en HDFS donde se replican y guardan los bloques de archivos.
-- **ResourceManager (YARN)**: Orquestador central encargado de la gestión de recursos del clúster y asignación de tareas de cómputo.
-- **NodeManager (YARN)**: Agente ejecutor de contenedores de tareas MapReduce en los nodos de trabajo.
-- **Client**: Contenedor cliente de administración interactiva con Python 3 instalado, utilizado para ejecutar comandos HDFS y enviar los trabajos de Hadoop Streaming al clúster sin afectar los servicios núcleo.
+Ajustes clave en `hadoop.env`: `mapreduce.framework.name=yarn` (sin esto los jobs corren en modo
+local y no aparecen en YARN), `dfs.replication=2`, bloques de 4 MB, un DataNode se marca *Dead* en
+~60 s y un NodeManager *LOST* en 30 s (para poder demostrar los fallos en clase), y agregación de logs.
 
----
+## Datasets y jobs
 
-## 🛠️ Requisitos e Infraestructura
+`scripts/generar_datos.py` genera (semilla fija) 3 datasets y calcula sus resultados esperados sin Hadoop:
 
-- **Host Compatible:** macOS (Apple Silicon M1/M2/M3) o Windows (WSL2 / Docker Desktop).
-- **Runtime:** Docker Engine & Docker Compose.
-- **Imágenes Base:** Suite oficial `bde2020` (versión Hadoop 3.2.1 / Java 8 / Debian Stretch).
-- **Intérprete en Contenedor Client:** Python 3 (instalado en el contenedor cliente vía repositorios históricos de Debian).
+| Job | Dataset (HDFS) | Mapper → Reducer | Salida |
+|---|---|---|---|
+| 1. Promedio por clave | `/taller/input/ventas/ventas.csv` (260 000 ventas, ~8,5 MB) | `categoria, valor` → promedio, cantidad y total | `/taller/output/promedio` |
+| 2. WordCount (+ combiner) | `/taller/input/resenas/resenas.txt` (150 000 reseñas, ~11 MB) | `palabra, 1` → suma | `/taller/output/wordcount` |
+| 3. Análisis de logs | `/taller/input/logs/logs_servidor.log` (280 000 líneas, ~14 MB) | `hora, 1, es_error` → peticiones, errores, % | `/taller/output/logs` |
 
----
+## Ejecución (Windows PowerShell, macOS o Linux)
 
-## 📂 Estructura del Proyecto
+```bash
+docker compose up -d --build                          # 1. levantar el clúster (la 1.ª vez tarda)
+docker compose ps                                     #    todos deben estar "Up"
+docker compose exec client bash scripts/01_cargar_datos.sh   # 2. generar datos y subirlos a HDFS
+docker compose exec client bash scripts/02_ejecutar_jobs.sh  # 3. correr los 3 jobs en YARN
+docker compose exec client bash scripts/03_validar.sh        # 4. comparar con el resultado esperado
+docker compose exec client bash scripts/estado.sh            # estado de nodos y aplicaciones
+```
 
-    taller_hdfs/
-    ├── docker-compose.yml       # Configuración del clúster (NameNode, DataNodes, YARN, Client)
-    ├── hadoop.env               # Variables de entorno compartidas del clúster HDFS
-    ├── .gitattributes          # Normalización de saltos de línea (LF) para compatibilidad Windows/Linux
-    ├── datasets/
-    │   └── data.csv             # Dataset de prueba con transacciones y logs
-    ├── jobs/
-    │   ├── mapper_avg.py        # Mapper: Promedio por categoría
-    │   ├── reducer_avg.py       # Reducer: Promedio por categoría
-    │   ├── mapper_wc.py         # Mapper: Conteo de palabras (WordCount)
-    │   ├── reducer_wc.py        # Reducer: Conteo de palabras (WordCount)
-    │   ├── mapper_filter.py     # Mapper: Filtrado de logs de error
-    │   └── reducer_filter.py    # Reducer: Filtrado de logs de error
-    └── README.md                # Documentación del proyecto
+Comandos útiles dentro del cliente (`docker compose exec client bash`):
 
----
+```bash
+hdfs dfs -ls -R /taller
+hdfs dfs -cat /taller/output/promedio/part-00000
+hdfs fsck /taller/input -files -blocks -locations
+yarn application -list -appStates ALL
+yarn logs -applicationId <application_id> | less
+```
 
-## ⚙️ Descripción de los Trabajos MapReduce
+## Pruebas de tolerancia a fallos
 
-### 1. Trabajo 1: Promedio por Categoría (/output_avg)
-- **Mapper:** Procesa registros CSV emitiendo pares de la categoría con su respectivo valor numérico.
-- **Reducer:** Agrupa las claves, calcula la suma acumulada de valores, el total de registros por categoría y emite el promedio final formateado.
+| # | Prueba | Cómo | Qué se observa |
+|---|---|---|---|
+| 1 | Apagar un DataNode | `docker compose stop datanode2`, esperar ~60 s, `scripts/estado.sh`, leer un archivo; luego `docker compose start datanode2` | 1 Dead node, bloques *under-replicated*, pero los archivos se siguen leyendo; al volver: Healthy |
+| 2 | Reiniciar un contenedor durante una operación HDFS | Mientras corre un `hdfs dfs -put` de un archivo grande: `docker compose restart datanode1` | El `put` termina igual (recuperación del pipeline de escritura) y el archivo queda completo |
+| 3 | Detener un NodeManager con un job corriendo | `scripts/04_job_lento.sh` y, mientras corre, `docker compose stop nodemanager2` | El NodeManager pasa a LOST, YARN reprograma sus tareas en `nodemanager1` y el job termina SUCCEEDED |
+| 4 | Fallo dentro de un Map | `scripts/05_job_con_error.sh` | Cada tarea map se reintenta 4 veces y el job queda FAILED; se lee el error con `yarn logs` |
 
-### 2. Trabajo 2: Conteo de Palabras / WordCount (/output_wc)
-- **Mapper:** Descompone las líneas del dataset en palabras individuales, las normaliza en minúsculas y emite pares (palabra, 1).
-- **Reducer:** Suma y agrupa la frecuencia total de aparición de cada token único.
+El detalle de cada prueba, con las salidas obtenidas, está en la guía HTML.
 
-### 3. Trabajo 3: Filtro de Logs de Error (/output_filter)
-- **Mapper:** Examina las entradas y filtra únicamente las líneas asociadas a eventos con severidad ERROR o CRITICAL.
-- **Reducer:** Contabiliza y estructura los eventos de error encontrados.
+## Apagar
 
----
+```bash
+docker compose down        # apaga (conserva los datos de HDFS)
+docker compose down -v     # apaga y BORRA los datos de HDFS
+```
 
-## 🚀 Guía de Ejecución y Comandos Utilizados
-
-### Despliegue y Ejecución Automatizada en un Solo Paso
-
-Copia y pega las siguientes instrucciones secuenciales en tu terminal para ejecutar de principio a fin la limpieza del entorno, inicialización del clúster, configuración de dependencias, ingesta de datos a HDFS y corrida de los 3 trabajos MapReduce:
-
-    docker compose down -v
-    docker compose up -d
-    echo "Esperando inicialización del clúster..."
-    sleep 15
-    docker compose exec client bash -c "echo 'deb [http://archive.debian.org/debian](http://archive.debian.org/debian) stretch main' > /etc/apt/sources.list && echo 'deb [http://archive.debian.org/debian-security](http://archive.debian.org/debian-security) stretch/updates main' >> /etc/apt/sources.list && echo 'Acquire::Check-Valid-Until \"false\";' > /etc/apt/apt.conf.d/99no-check-valid-until"
-    docker compose exec client bash -c "apt-get update && apt-get install -y python3"
-    docker compose exec client bash -c "until hdfs dfs -mkdir -p /input 2>/dev/null; do echo 'Esperando a HDFS en puerto 9000...'; sleep 3; done; hdfs dfs -put -f /workspace/datasets/data.csv /input/data.csv && hdfs dfs -ls /input"
-
-    docker compose exec client hdfs dfs -rm -r /output_avg 2>/dev/null
-    docker compose exec client hadoop jar /opt/hadoop-3.2.1/share/hadoop/tools/lib/hadoop-streaming-3.2.1.jar -files /workspace/jobs/mapper_avg.py,/workspace/jobs/reducer_avg.py -mapper "python3 /workspace/jobs/mapper_avg.py" -reducer "python3 /workspace/jobs/reducer_avg.py" -input /input/data.csv -output /output_avg
-    echo "=== RESULTADO TRABAJO 1 (PROMEDIO) ==="
-    docker compose exec client hdfs dfs -cat /output_avg/part-00000
-
-    docker compose exec client hdfs dfs -rm -r /output_wc 2>/dev/null
-    docker compose exec client hadoop jar /opt/hadoop-3.2.1/share/hadoop/tools/lib/hadoop-streaming-3.2.1.jar -files /workspace/jobs/mapper_wc.py,/workspace/jobs/reducer_wc.py -mapper "python3 /workspace/jobs/mapper_wc.py" -reducer "python3 /workspace/jobs/reducer_wc.py" -input /input/data.csv -output /output_wc
-    echo "=== RESULTADO TRABAJO 2 (WORDCOUNT) ==="
-    docker compose exec client hdfs dfs -cat /output_wc/part-00000
-
-    docker compose exec client hdfs dfs -rm -r /output_filter 2>/dev/null
-    docker compose exec client hadoop jar /opt/hadoop-3.2.1/share/hadoop/tools/lib/hadoop-streaming-3.2.1.jar -files /workspace/jobs/mapper_filter.py,/workspace/jobs/reducer_filter.py -mapper "python3 /workspace/jobs/mapper_filter.py" -reducer "python3 /workspace/jobs/reducer_filter.py" -input /input/data.csv -output /output_filter
-    echo "=== RESULTADO TRABAJO 3 (FILTRO LOGS) ==="
-    docker compose exec client hdfs dfs -cat /output_filter/part-00000
-
----
-
-## 🌐 Consolas de Monitoreo Web
-
-El clúster expone las interfaces gráficas nativas en la máquina host para validación visual:
-
-- **HDFS NameNode Status & File System Explorer:** http://localhost:9870
-- **YARN Resource Manager Status & Application Logs:** http://localhost:8088
-
----
-
-## 🛡️ Evaluación de Tolerancia a Fallos
-
-Para evaluar el comportamiento del sistema ante la caída controlada de un nodo:
-
-1. **Simular la pérdida de un DataNode:**
-
-       docker compose stop datanode1
-
-2. **Validación:**
-   - Consulta el estado en el navegador en http://localhost:9870 en la sección **Datanodes** para verificar el estado `Dead` de `datanode1`.
-   - Consulta cualquier resultado en HDFS desde el cliente para confirmar la disponibilidad continua del servicio a través de `datanode2`:
-
-         docker compose exec client hdfs dfs -cat /output_avg/part-00000
-
-3. **Reintegrar el DataNode:**
-
-       docker compose start datanode1
+Si los puertos 9870/8088/8188 están ocupados: `PUERTO_HDFS=19870 PUERTO_YARN=18088 PUERTO_HISTORY=18188 docker compose up -d`
+(en PowerShell: `$env:PUERTO_HDFS=19870; ...`).
