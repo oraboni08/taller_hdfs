@@ -1,0 +1,34 @@
+
+==================== HDFS: DataNodes ====================
+DFS Used: 105645015 (100.75 MB)
+	Under replicated blocks: 0
+	Missing blocks: 0
+	Missing blocks (with replication factor 1): 0
+Live datanodes (2):
+Name: 172.20.0.2:9866 (datanode2.taller_hdfs_hdfs-net)
+Hostname: datanode2
+DFS Used: 52815528 (50.37 MB)
+Name: 172.20.0.4:9866 (datanode1.taller_hdfs_hdfs-net)
+Hostname: datanode1
+DFS Used: 52829487 (50.38 MB)
+
+==================== HDFS: salud del sistema de archivos ====================
+ Under-replicated blocks:	0 (0.0 %)
+ Average block replication:	2.0
+ Missing blocks:		0
+The filesystem under path '/taller' is HEALTHY
+
+==================== YARN: NodeManagers ====================
+Total Nodes:3
+         Node-Id	     Node-State	Node-Http-Address	Number-of-Running-Containers
+nodemanager1:35947	        RUNNING	nodemanager1:8042	                           0
+nodemanager2:46003	        RUNNING	nodemanager2:8042	                           0
+nodemanager2:40999	           LOST	nodemanager2:8042	                           0
+
+==================== YARN: aplicaciones ====================
+                Application-Id	    Application-Name	    Application-Type	      User	     Queue	             State	       Final-State	       Progress	                       Tracking-URL
+application_1794481638538_0005	    taller-con-error	           MAPREDUCE	      root	   default	          FINISHED	            FAILED	           100%	http://nodemanager1:19888/jobhistory/job/job_1794481638538_0005
+application_1794481638538_0004	taller-promedio-lento	           MAPREDUCE	      root	   default	          FINISHED	         SUCCEEDED	           100%	http://nodemanager1:19888/jobhistory/job/job_1794481638538_0004
+application_1794481638538_0003	         taller-logs	           MAPREDUCE	      root	   default	          FINISHED	         SUCCEEDED	           100%	http://nodemanager1:19888/jobhistory/job/job_1794481638538_0003
+application_1794481638538_0002	    taller-wordcount	           MAPREDUCE	      root	   default	          FINISHED	         SUCCEEDED	           100%	http://nodemanager1:19888/jobhistory/job/job_1794481638538_0002
+application_1794481638538_0001	     taller-promedio	           MAPREDUCE	      root	   default	          FINISHED	         SUCCEEDED	           100%	http://nodemanager1:19888/jobhistory/job/job_1794481638538_0001

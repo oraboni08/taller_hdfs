@@ -1,0 +1,5 @@
+datasets/*.csv
+datasets/*.txt
+datasets/*.log
+datasets/esperado/
+__pycache__/

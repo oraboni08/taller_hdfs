@@ -1,0 +1,9 @@
+LogContents:
+Traceback (most recent call last):
+  File "mapper_con_error.py", line 8, in <module>
+    raise RuntimeError("Error simulado en el mapper: %s" % linea[:40])
+RuntimeError: Error simulado en el mapper: fecha,categoria,ciudad,valor
+
+--
+LogContents:
+

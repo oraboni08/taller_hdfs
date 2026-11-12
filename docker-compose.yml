@@ -1,5 +1,18 @@
 name: taller_hdfs
 
+# Clúster Hadoop 3.2.1:
+#   HDFS -> namenode + datanode1 + datanode2
+#   YARN -> resourcemanager + nodemanager1 + nodemanager2 + historyserver
+#   client -> contenedor desde donde se dan los comandos (hdfs, yarn, hadoop jar)
+# Los puertos del host se pueden cambiar con variables (ej. PUERTO_HDFS=19870).
+
+x-hadoop: &hadoop
+  platform: linux/amd64
+  env_file:
+    - ./hadoop.env
+  networks:
+    - hdfs-net
+
 networks:
   hdfs-net:
     driver: bridge
@@ -8,94 +21,103 @@ volumes:
   namenode-data:
   datanode1-data:
   datanode2-data:
+  historyserver-data:
 
 services:
+  # ------------------------- HDFS -------------------------
   namenode:
+    <<: *hadoop
     image: bde2020/hadoop-namenode:2.0.0-hadoop3.2.1-java8
     container_name: namenode
     hostname: namenode
-    platform: linux/amd64
-    restart: always
     environment:
-      - CLUSTER_NAME=test
+      - CLUSTER_NAME=taller
     ports:
-      - "9870:9870" # HDFS Web UI
-    env_file:
-      - ./hadoop.env
+      - "${PUERTO_HDFS:-9870}:9870"   # Interfaz web de HDFS
     volumes:
       - namenode-data:/hadoop/dfs/name
-    networks:
-      - hdfs-net
 
   datanode1:
+    <<: *hadoop
     image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
     container_name: datanode1
     hostname: datanode1
-    platform: linux/amd64
-    restart: always
     environment:
-      - SERVICE_PRECONDITION=namenode:9000
-    env_file:
-      - ./hadoop.env
+      - SERVICE_PRECONDITION=namenode:9870
     volumes:
       - datanode1-data:/hadoop/dfs/data
-    networks:
-      - hdfs-net
 
   datanode2:
+    <<: *hadoop
     image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
     container_name: datanode2
     hostname: datanode2
-    platform: linux/amd64
-    restart: always
     environment:
-      - SERVICE_PRECONDITION=namenode:9000
-    env_file:
-      - ./hadoop.env
+      - SERVICE_PRECONDITION=namenode:9870
     volumes:
       - datanode2-data:/hadoop/dfs/data
-    networks:
-      - hdfs-net
 
+  # ------------------------- YARN -------------------------
   resourcemanager:
+    <<: *hadoop
     image: bde2020/hadoop-resourcemanager:2.0.0-hadoop3.2.1-java8
     container_name: resourcemanager
     hostname: resourcemanager
-    platform: linux/amd64
-    restart: always
     environment:
-      - SERVICE_PRECONDITION=namenode:9000
+      - SERVICE_PRECONDITION=namenode:9000 namenode:9870 datanode1:9864 datanode2:9864
     ports:
-      - "8088:8088" # YARN Resource Manager Web UI
-    env_file:
-      - ./hadoop.env
-    networks:
-      - hdfs-net
+      - "${PUERTO_YARN:-8088}:8088"   # Interfaz web de YARN
 
-  nodemanager:
-    image: bde2020/hadoop-nodemanager:2.0.0-hadoop3.2.1-java8
-    container_name: nodemanager
-    hostname: nodemanager
-    platform: linux/amd64
-    restart: always
+  nodemanager1:
+    <<: *hadoop
+    build:
+      context: ./docker
+      dockerfile: Dockerfile.python
+      args:
+        BASE_IMAGE: bde2020/hadoop-nodemanager:2.0.0-hadoop3.2.1-java8
+    image: taller_hdfs/nodemanager-python:3.2.1
+    container_name: nodemanager1
+    hostname: nodemanager1
     environment:
-      - SERVICE_PRECONDITION=namenode:9000 resourcemanager:8088
-    env_file:
-      - ./hadoop.env
-    networks:
-      - hdfs-net
+      - SERVICE_PRECONDITION=namenode:9000 namenode:9870 resourcemanager:8088
 
+  nodemanager2:
+    <<: *hadoop
+    image: taller_hdfs/nodemanager-python:3.2.1
+    container_name: nodemanager2
+    hostname: nodemanager2
+    depends_on:
+      - nodemanager1   # usa la imagen que construye nodemanager1
+    environment:
+      - SERVICE_PRECONDITION=namenode:9000 namenode:9870 resourcemanager:8088
+
+  historyserver:
+    <<: *hadoop
+    image: bde2020/hadoop-historyserver:2.0.0-hadoop3.2.1-java8
+    container_name: historyserver
+    hostname: historyserver
+    environment:
+      - SERVICE_PRECONDITION=namenode:9000 namenode:9870 resourcemanager:8088
+    ports:
+      - "${PUERTO_HISTORY:-8188}:8188"   # Historial de aplicaciones
+    volumes:
+      - historyserver-data:/hadoop/yarn/timeline
+
+  # ------------------------- Cliente -------------------------
   client:
-    image: bde2020/hadoop-base:2.0.0-hadoop3.2.1-java8
+    <<: *hadoop
+    build:
+      context: ./docker
+      dockerfile: Dockerfile.python
+      args:
+        BASE_IMAGE: bde2020/hadoop-base:2.0.0-hadoop3.2.1-java8
+    image: taller_hdfs/client-python:3.2.1
     container_name: client
     hostname: client
-    platform: linux/amd64
-    tty: true
-    stdin_open: true
     command: ["tail", "-f", "/dev/null"]
-    env_file:
-      - ./hadoop.env
+    working_dir: /workspace
+    depends_on:
+      - namenode
+      - resourcemanager
     volumes:
       - .:/workspace
-    networks:
-      - hdfs-net

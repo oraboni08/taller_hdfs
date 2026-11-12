@@ -1,0 +1,818 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Guía Taller HDFS</title>
+<style>
+:root{
+  --bg:#f7f7f5; --panel:#ffffff; --ink:#1d1f23; --muted:#5d636e; --line:#dfe1e5;
+  --accent:#2f5bd3; --accent-soft:#e7edfc;
+  --hdfs:#1f8a5b; --hdfs-soft:#e3f4ec; --yarn:#b4610f; --yarn-soft:#fbeedd; --mr:#7a3fc4; --mr-soft:#efe6fb;
+  --ok:#1f8a5b; --bad:#c23b3b; --bad-soft:#fbe6e6; --warn-soft:#fff6db; --warn:#8a6300;
+  --code-bg:#1e2128; --code-ink:#e6e8ec;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#15171b; --panel:#1d2025; --ink:#e7e9ec; --muted:#9aa1ac; --line:#30343b;
+    --accent:#7d9cf0; --accent-soft:#232c44;
+    --hdfs:#4cc28a; --hdfs-soft:#1b3328; --yarn:#e79a4b; --yarn-soft:#3a2a18; --mr:#b38af0; --mr-soft:#2c2340;
+    --ok:#4cc28a; --bad:#ec7a7a; --bad-soft:#3a1f1f; --warn-soft:#352c12; --warn:#e9c45a;
+    --code-bg:#0f1114; --code-ink:#e6e8ec;
+  }
+}
+:root[data-theme="dark"]{
+    --bg:#15171b; --panel:#1d2025; --ink:#e7e9ec; --muted:#9aa1ac; --line:#30343b;
+    --accent:#7d9cf0; --accent-soft:#232c44;
+    --hdfs:#4cc28a; --hdfs-soft:#1b3328; --yarn:#e79a4b; --yarn-soft:#3a2a18; --mr:#b38af0; --mr-soft:#2c2340;
+    --ok:#4cc28a; --bad:#ec7a7a; --bad-soft:#3a1f1f; --warn-soft:#352c12; --warn:#e9c45a;
+    --code-bg:#0f1114; --code-ink:#e6e8ec;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.wrap{max-width:980px;margin:0 auto;padding:24px 16px 80px}
+header.hero{padding:28px 0 8px;border-bottom:1px solid var(--line);margin-bottom:20px}
+header.hero h1{margin:0 0 6px;font-size:clamp(1.6rem,4vw,2.3rem);line-height:1.2}
+header.hero p{margin:4px 0;color:var(--muted)}
+nav.toc{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 18px;margin:18px 0 28px}
+nav.toc b{display:block;margin-bottom:6px}
+nav.toc ol{margin:0;padding-left:20px;columns:2;column-gap:28px}
+@media (max-width:640px){nav.toc ol{columns:1}}
+nav.toc a{color:var(--accent);text-decoration:none}
+section{margin:0 0 44px}
+h2{font-size:1.55rem;margin:36px 0 12px;padding-bottom:6px;border-bottom:2px solid var(--line)}
+h3{font-size:1.18rem;margin:28px 0 8px}
+h4{margin:18px 0 6px}
+a{color:var(--accent)}
+code{font-family:ui-monospace,Consolas,"Cascadia Mono",monospace;font-size:.9em;background:var(--accent-soft);padding:1px 5px;border-radius:4px}
+pre{background:var(--code-bg);color:var(--code-ink);padding:12px 14px;border-radius:10px;overflow-x:auto;font:13.5px/1.5 ui-monospace,Consolas,"Cascadia Mono",monospace;margin:8px 0 14px}
+pre code{background:none;padding:0;color:inherit}
+pre .c{color:#8b93a1}
+pre.out{background:var(--panel);color:var(--ink);border:1px dashed var(--line)}
+pre.mini{font-size:12px;padding:8px;margin:6px 0 0}
+.lbl{display:inline-block;font-size:.75rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin-top:6px}
+table{width:100%;border-collapse:collapse;margin:10px 0 16px;font-size:.94rem;background:var(--panel);border-radius:10px;overflow:hidden;display:block;overflow-x:auto}
+table > tbody{display:table;width:100%}
+th,td{border-bottom:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+th{background:var(--accent-soft)}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:12px 0}
+@media (max-width:760px){.grid3{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px;min-width:0}
+.small{font-size:.86rem;color:var(--muted)}
+.tag{display:inline-block;font-size:.75rem;font-weight:700;padding:2px 8px;border-radius:999px;margin-bottom:6px}
+.t-hdfs{background:var(--hdfs-soft);color:var(--hdfs)} .t-yarn{background:var(--yarn-soft);color:var(--yarn)} .t-mr{background:var(--mr-soft);color:var(--mr)}
+.step{background:var(--panel);border:1px solid var(--line);border-left:5px solid var(--accent);border-radius:12px;padding:14px 18px;margin:18px 0}
+.step > h3{margin-top:0}
+.note{background:var(--accent-soft);border-radius:10px;padding:10px 14px;margin:12px 0}
+.warn{background:var(--warn-soft);border-radius:10px;padding:10px 14px;margin:12px 0}
+.warn b:first-child{color:var(--warn)}
+.okbox{background:var(--hdfs-soft);border-radius:10px;padding:10px 14px;margin:12px 0}
+.badbox{background:var(--bad-soft);border-radius:10px;padding:10px 14px;margin:12px 0}
+figure{margin:14px 0}
+figure img{max-width:100%;border:1px solid var(--line);border-radius:10px;display:block}
+figcaption{font-size:.86rem;color:var(--muted);margin-top:4px}
+details{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 14px;margin:10px 0}
+details summary{cursor:pointer;font-weight:600}
+svg.diagram{width:100%;height:auto;background:var(--panel);border:1px solid var(--line);border-radius:12px;margin:10px 0;padding:6px}
+.d-box{fill:var(--panel);stroke:var(--muted);stroke-width:1.5}
+.d-nn{fill:var(--hdfs-soft);stroke:var(--hdfs);stroke-width:1.5}
+.d-b1{fill:var(--accent-soft);stroke:var(--accent)} .d-b2{fill:var(--yarn-soft);stroke:var(--yarn)} .d-b3{fill:var(--mr-soft);stroke:var(--mr)}
+.d-mr{fill:var(--mr-soft);stroke:var(--mr);stroke-width:1.5}
+.d-t{fill:var(--ink);font:600 14px system-ui,sans-serif} .d-s{fill:var(--muted);font:12px system-ui,sans-serif}
+.d-arrow{stroke:var(--muted);stroke-width:1.8;fill:none;marker-end:url(#flecha)}
+.check{list-style:none;padding-left:0} .check li{padding-left:26px;position:relative;margin:4px 0}
+.check li::before{content:"✓";position:absolute;left:4px;color:var(--ok);font-weight:700}
+.toggle{position:fixed;right:14px;bottom:14px;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:999px;padding:8px 12px;cursor:pointer;font:inherit;font-size:.85rem}
+@media print{.toggle,nav.toc{display:none} .step{break-inside:avoid}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute"><defs><marker id="flecha" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b93a1"/></marker></defs></svg>
+<div class="wrap">
+<header class="hero">
+  <h1>Taller práctico: HDFS y Hadoop MapReduce con Docker</h1>
+  <p>Big Data · Prof. Heberth Martinez · Guía para hacerlo desde cero, con las salidas reales que obtuvimos al correrlo (12-nov-2026).</p>
+  <p>Repositorio: <a href="https://github.com/oraboni08/taller_hdfs">github.com/oraboni08/taller_hdfs</a></p>
+</header>
+
+<nav class="toc">
+  <b>Contenido</b>
+  <ol>
+    <li><a href="#resumen">Qué pide el taller y cómo se cumple</a></li>
+    <li><a href="#resultados">Resultados obtenidos</a></li>
+    <li><a href="#conceptos">Parte A · Qué es todo esto y para qué sirve</a></li>
+    <li><a href="#paso0">Parte B · Paso 0: requisitos</a></li>
+    <li><a href="#paso1">Paso 1: estructura del proyecto</a></li>
+    <li><a href="#paso2">Paso 2: configuración (hadoop.env)</a></li>
+    <li><a href="#paso3">Paso 3: imagen con Python</a></li>
+    <li><a href="#paso4">Paso 4: docker-compose.yml</a></li>
+    <li><a href="#paso5">Paso 5: levantar y validar el clúster</a></li>
+    <li><a href="#paso6">Paso 6: datasets y carga a HDFS</a></li>
+    <li><a href="#paso7">Paso 7: los 3 jobs MapReduce</a></li>
+    <li><a href="#paso8">Paso 8: validación de resultados</a></li>
+    <li><a href="#paso9">Paso 9: verificar en YARN y logs</a></li>
+    <li><a href="#paso10">Paso 10: tolerancia a fallos</a></li>
+    <li><a href="#paso11">Paso 11: apagar</a></li>
+    <li><a href="#cambios">Parte C · Qué se corrigió del repo original</a></li>
+    <li><a href="#problemas">Parte D · Problemas comunes</a></li>
+    <li><a href="#preguntas">Parte E · Preguntas para la sustentación</a></li>
+  </ol>
+</nav>
+
+<section id="resumen">
+  <h2>Qué pide el taller y cómo se cumple</h2>
+  <table>
+    <tr><th>Punto del PDF</th><th>Cómo lo cumplimos</th><th>Evidencia</th></tr>
+    <tr><td><b>1. Clúster HDFS ≥ 3 nodos</b> (+ opcionales)</td><td>NameNode + 2 DataNodes, y además ResourceManager, 2 NodeManagers y HistoryServer. Un contenedor <code>client</code> para dar comandos.</td><td>Paso 5: <code>docker compose ps</code>, web de HDFS (9870) y YARN (8088).</td></tr>
+    <tr><td><b>2. Tres jobs MapReduce</b></td><td>Promedio por clave, WordCount (con combiner) y análisis de logs (horas pico + errores), en Python con Hadoop Streaming. Dataset, estructura de input, salidas y validación definidos.</td><td>Paso 7 y 8: los 3 coinciden al 100 % con el resultado esperado.</td></tr>
+    <tr><td><b>3. Verificar ejecución</b></td><td>Estados en YARN UI y <code>yarn application -list</code>, logs con <code>yarn logs</code>, salidas con <code>hdfs dfs -ls / -cat</code>, logs de contenedores con <code>docker compose logs</code>. Se vieron RUNNING, SUCCEEDED y FAILED.</td><td>Paso 9.</td></tr>
+    <tr><td><b>4. Tolerancia a fallos</b></td><td>4 pruebas: apagar un DataNode, reiniciar un DataNode durante un <code>put</code>, detener un NodeManager con un job corriendo, y una tarea map que falla.</td><td>Paso 10, con las salidas reales.</td></tr>
+  </table>
+</section>
+
+<section id="resultados">
+  <h2>Resultados obtenidos</h2>
+  <p>Corrida del 12-nov-2026. Toda la evidencia en texto está en la carpeta <code>resultados/</code> del repo y las capturas en <code>docs/img/</code>. El paso a paso de cada resultado está en la Parte B.</p>
+
+  <h3>Clúster</h3>
+  <table>
+    <tr><th>Verificación</th><th>Resultado</th></tr>
+    <tr><td>Contenedores</td><td>8 de 8 en <code>Up (healthy)</code></td></tr>
+    <tr><td>HDFS</td><td>2 DataNodes vivos; 3 datasets = 10 bloques, cada uno con 2 réplicas; <b>HEALTHY</b></td></tr>
+    <tr><td>YARN</td><td>2 NodeManagers <b>RUNNING</b>, 3 GB y 4 vCores en total</td></tr>
+  </table>
+
+  <h3>Jobs MapReduce</h3>
+  <table>
+    <tr><th>Aplicación YARN</th><th>Job</th><th>Estado final</th><th>Validación manual</th></tr>
+    <tr><td><code>…_0001</code></td><td>taller-promedio</td><td style="color:var(--ok)"><b>SUCCEEDED</b></td><td>6 de 6 claves = esperado</td></tr>
+    <tr><td><code>…_0002</code></td><td>taller-wordcount</td><td style="color:var(--ok)"><b>SUCCEEDED</b></td><td>67 de 67 claves = esperado</td></tr>
+    <tr><td><code>…_0003</code></td><td>taller-logs</td><td style="color:var(--ok)"><b>SUCCEEDED</b></td><td>24 de 24 claves = esperado</td></tr>
+    <tr><td><code>…_0004</code></td><td>taller-promedio-lento (prueba 3)</td><td style="color:var(--ok)"><b>SUCCEEDED</b></td><td>Mismo resultado que el job 1, pese a perder un nodo</td></tr>
+    <tr><td><code>…_0005</code></td><td>taller-con-error (prueba 4)</td><td style="color:var(--bad)"><b>FAILED</b></td><td>Esperado: el mapper falla a propósito</td></tr>
+  </table>
+
+  <div class="grid3">
+    <div class="card"><span class="tag t-mr">Job 1</span><br><b>Promedio por categoría</b>
+      <table style="margin:6px 0 0;font-size:.85rem">
+        <tr><th>Categoría</th><th>Promedio</th><th>Ventas</th></tr>
+        <tr><td>electronica</td><td>1 403 720,81</td><td>31 503</td></tr>
+        <tr><td>deportes</td><td>320 257,54</td><td>23 315</td></tr>
+        <tr><td>hogar</td><td>209 572,94</td><td>46 569</td></tr>
+        <tr><td>ropa</td><td>140 300,93</td><td>65 366</td></tr>
+        <tr><td>libros</td><td>68 018,20</td><td>15 498</td></tr>
+        <tr><td>alimentos</td><td>42 480,41</td><td>77 749</td></tr>
+      </table>
+      <p class="small">Electrónica tiene el ticket más alto; alimentos es la categoría con más ventas.</p></div>
+    <div class="card"><span class="tag t-mr">Job 2</span><br><b>WordCount (top 8)</b>
+      <table style="margin:6px 0 0;font-size:.85rem">
+        <tr><th>Palabra</th><th>Veces</th></tr>
+        <tr><td>el</td><td>180 176</td></tr><tr><td>la</td><td>119 824</td></tr>
+        <tr><td>y</td><td>98 171</td></tr><tr><td>lo</td><td>56 048</td></tr>
+        <tr><td>fue</td><td>51 843</td></tr><tr><td>llegó</td><td>51 576</td></tr>
+        <tr><td>es</td><td>37 715</td></tr><tr><td>muy</td><td>37 658</td></tr>
+      </table>
+      <p class="small">67 palabras distintas en 150 000 reseñas.</p></div>
+    <div class="card"><span class="tag t-mr">Job 3</span><br><b>Horas pico y errores</b>
+      <table style="margin:6px 0 0;font-size:.85rem">
+        <tr><th>Hora</th><th>Peticiones</th><th>% error</th></tr>
+        <tr><td><b>20</b></td><td><b>29 290</b></td><td>9,07</td></tr>
+        <tr><td>19</td><td>26 069</td><td>9,10</td></tr>
+        <tr><td>12</td><td>23 256</td><td>9,11</td></tr>
+        <tr><td>13</td><td>21 996</td><td>8,84</td></tr>
+        <tr><td>21</td><td>20 571</td><td>2,96</td></tr>
+        <tr><td>03</td><td>1 525</td><td>3,28</td></tr>
+      </table>
+      <p class="small">La hora pico es las 20:00. En las horas de más carga los errores suben del ~3 % al ~9 %.</p></div>
+  </div>
+
+  <h3>Pruebas de tolerancia a fallos</h3>
+  <table>
+    <tr><th>#</th><th>Fallo provocado</th><th>Resultado observado</th><th>Veredicto</th></tr>
+    <tr><td>1</td><td><code>docker compose stop datanode2</code></td><td>Marcado <b>Dead</b> a los ~70 s; 10 de 10 bloques sub-replicados, <b>0 perdidos</b>; archivo leído completo (260 001 líneas). Al encenderlo, en 25 s volvió a 2 réplicas y HEALTHY.</td><td style="color:var(--ok)"><b>Sin pérdida de datos</b></td></tr>
+    <tr><td>2</td><td><code>restart datanode1</code> durante un <code>put</code> de 14 MB</td><td><code>Connection reset by peer</code> → <code>Excluding datanode</code>; <code>put</code> con código 0 en 6,6 s; MD5 local = MD5 en HDFS.</td><td style="color:var(--ok)"><b>Escritura completa</b></td></tr>
+    <tr><td>3</td><td><code>stop nodemanager2</code> con un job corriendo</td><td><b>LOST</b> a los ~40 s; intento <code>m_000002_0</code> matado y relanzado como <code>m_000002_1</code> en nodemanager1; progreso 32 % → 17 %; job SUCCEEDED.</td><td style="color:var(--ok)"><b>Job recuperado</b></td></tr>
+    <tr><td>4</td><td>Mapper que lanza una excepción</td><td>4 intentos por tarea: 11 tareas map lanzadas, 10 fallidas; job FAILED; <code>RuntimeError</code> visible con <code>yarn logs</code>.</td><td style="color:var(--bad)"><b>Falla esperada</b> (bug en el código)</td></tr>
+  </table>
+  <div class="grid3" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr))">
+    <figure style="margin:0"><img style="height:220px;width:100%;object-fit:cover;object-position:top" src="img/hdfs_dead_overview.png" alt="HDFS con un nodo muerto"><figcaption>Prueba 1: Live 1 / Dead 1.</figcaption></figure>
+    <figure style="margin:0"><img style="height:220px;width:100%;object-fit:cover;object-position:top" src="img/yarn_running.png" alt="YARN con un nodo perdido"><figcaption>Prueba 3: job RUNNING con "Lost Nodes 1".</figcaption></figure>
+    <figure style="margin:0"><img style="height:220px;width:100%;object-fit:cover;object-position:top" src="img/history.png" alt="Historial de aplicaciones"><figcaption>Prueba 4: taller-con-error FAILED.</figcaption></figure>
+  </div>
+  <div class="okbox"><b>Conclusiones:</b>
+    <ul>
+      <li>La <b>replicación</b> evitó la pérdida de datos al caer un DataNode.</li>
+      <li>El <b>pipeline de escritura</b> excluye al nodo que falla y sigue con los demás.</li>
+      <li>YARN <b>reprograma en otro nodo</b> las tareas de una máquina perdida.</li>
+      <li>Los reintentos no sirven cuando el error está en el código: el job termina FAILED y la causa queda en los logs.</li>
+    </ul>
+  </div>
+</section>
+<section id="conceptos">
+  <h2>Parte A · Qué es todo esto y para qué sirve</h2>
+
+  <h3>El problema que resuelve</h3>
+  <p>Cuando los datos son demasiado grandes para un solo computador (terabytes de logs, millones de ventas, todo lo que escribe una app en un año), aparecen dos problemas:</p>
+  <ol>
+    <li><b>Guardarlos:</b> no caben en un disco, y si ese disco se daña se pierde todo.</li>
+    <li><b>Procesarlos:</b> leer 10 TB con un solo computador toma días.</li>
+  </ol>
+  <p>Hadoop resuelve las dos cosas con la misma idea: <b>repartir</b>. Los datos se parten en pedazos (bloques) guardados en muchos computadores (nodos), y el cálculo se lleva a donde están los datos, para que cada nodo procese su pedazo al mismo tiempo que los demás.</p>
+
+  <div class="grid3">
+    <div class="card"><div class="tag t-hdfs">HDFS</div><b>Guarda</b> los datos repartidos y con copias.<br><span class="small">"El disco duro del clúster"</span></div>
+    <div class="card"><div class="tag t-yarn">YARN</div><b>Administra</b> la memoria y CPU de los nodos y decide dónde corre cada tarea.<br><span class="small">"El sistema operativo del clúster"</span></div>
+    <div class="card"><div class="tag t-mr">MapReduce</div><b>Procesa</b> los datos en paralelo con dos funciones: map y reduce.<br><span class="small">"El programa que corre en el clúster"</span></div>
+  </div>
+
+  <h3>HDFS: cómo se guarda un archivo</h3>
+  <svg viewBox="0 0 760 270" class="diagram" role="img" aria-label="Un archivo se parte en bloques que se copian en dos DataNodes">
+    <rect x="10" y="95" width="150" height="80" rx="10" class="d-box"/>
+    <text x="85" y="128" class="d-t" text-anchor="middle">ventas.csv</text>
+    <text x="85" y="150" class="d-s" text-anchor="middle">8,5 MB</text>
+    <path d="M165 135 H215" class="d-arrow"/>
+    <text x="190" y="125" class="d-s" text-anchor="middle">se parte</text>
+    <g>
+      <rect x="220" y="60" width="70" height="40" rx="6" class="d-b1"/><text x="255" y="85" class="d-t" text-anchor="middle">B1</text>
+      <rect x="220" y="115" width="70" height="40" rx="6" class="d-b2"/><text x="255" y="140" class="d-t" text-anchor="middle">B2</text>
+      <rect x="220" y="170" width="70" height="40" rx="6" class="d-b3"/><text x="255" y="195" class="d-t" text-anchor="middle">B3</text>
+      <text x="255" y="232" class="d-s" text-anchor="middle">bloques de 4 MB</text>
+    </g>
+    <rect x="360" y="10" width="200" height="70" rx="10" class="d-nn"/>
+    <text x="460" y="38" class="d-t" text-anchor="middle">NameNode</text>
+    <text x="460" y="60" class="d-s" text-anchor="middle">B1→dn1,dn2 · B2→dn1,dn2 …</text>
+    <rect x="360" y="110" width="180" height="70" rx="10" class="d-box"/>
+    <text x="450" y="132" class="d-t" text-anchor="middle">datanode1</text>
+    <rect x="378" y="142" width="40" height="26" rx="4" class="d-b1"/><rect x="430" y="142" width="40" height="26" rx="4" class="d-b2"/><rect x="482" y="142" width="40" height="26" rx="4" class="d-b3"/>
+    <rect x="360" y="195" width="180" height="70" rx="10" class="d-box"/>
+    <text x="450" y="217" class="d-t" text-anchor="middle">datanode2</text>
+    <rect x="378" y="227" width="40" height="26" rx="4" class="d-b1"/><rect x="430" y="227" width="40" height="26" rx="4" class="d-b2"/><rect x="482" y="227" width="40" height="26" rx="4" class="d-b3"/>
+    <path d="M295 135 H355" class="d-arrow"/>
+    <text x="600" y="150" class="d-s">Replicación = 2:</text>
+    <text x="600" y="170" class="d-s">cada bloque existe</text>
+    <text x="600" y="190" class="d-s">en los dos DataNodes.</text>
+    <text x="600" y="215" class="d-s">Si uno se apaga, el</text>
+    <text x="600" y="235" class="d-s">archivo sigue completo.</text>
+  </svg>
+  <table>
+    <tr><th>Concepto</th><th>Qué es</th><th>En este taller</th></tr>
+    <tr><td><b>Bloque</b></td><td>Pedazo de tamaño fijo en que HDFS parte cada archivo.</td><td>4 MB (en producción suele ser 128 MB). Así un archivo de 8,5 MB queda en 3 bloques y se ve el reparto.</td></tr>
+    <tr><td><b>NameNode</b></td><td>El "índice": sabe qué bloques forman cada archivo y en qué DataNode está cada uno. No guarda datos.</td><td>Contenedor <code>namenode</code>, web en <code>localhost:9870</code>.</td></tr>
+    <tr><td><b>DataNode</b></td><td>Guarda los bloques en su disco y cada 3 s le manda un "latido" (heartbeat) al NameNode.</td><td><code>datanode1</code> y <code>datanode2</code>.</td></tr>
+    <tr><td><b>Replicación</b></td><td>Número de copias de cada bloque, en nodos distintos.</td><td>2, porque hay 2 DataNodes (con 3 quedaría siempre "sub-replicado").</td></tr>
+    <tr><td><b>Dead node</b></td><td>Si un DataNode deja de mandar latidos un tiempo, el NameNode lo marca muerto y usa las otras copias.</td><td>Configurado para que pase en ~60 s (por defecto son 10,5 min).</td></tr>
+    <tr><td><b>Safe mode</b></td><td>Modo de solo lectura al arrancar, mientras el NameNode verifica que los bloques estén.</td><td>Los scripts esperan a que salga de safe mode.</td></tr>
+  </table>
+
+  <h3>YARN: quién ejecuta qué</h3>
+  <table>
+    <tr><th>Pieza</th><th>Qué hace</th><th>En este taller</th></tr>
+    <tr><td><b>ResourceManager</b></td><td>El jefe: conoce la memoria y CPU libre de cada nodo y asigna "contenedores" (porciones de memoria+CPU) a cada aplicación.</td><td><code>resourcemanager</code>, web en <code>localhost:8088</code>.</td></tr>
+    <tr><td><b>NodeManager</b></td><td>El trabajador: ejecuta los contenedores que le asignan y reporta su estado. Si deja de reportar, queda <b>LOST</b> y sus tareas se repiten en otro nodo.</td><td><code>nodemanager1</code> y <code>nodemanager2</code> (cada uno ofrece 1,5 GB y 2 CPU, y trae Python 3).</td></tr>
+    <tr><td><b>ApplicationMaster</b></td><td>Un "capataz" por cada job: pide contenedores al ResourceManager, lanza los map y reduce y reintenta los que fallen.</td><td>Aparece solo mientras corre un job.</td></tr>
+    <tr><td><b>HistoryServer</b></td><td>Guarda el historial de las aplicaciones ya terminadas.</td><td><code>historyserver</code>, web en <code>localhost:8188</code>.</td></tr>
+    <tr><td><b>Estados</b></td><td>Una aplicación pasa por <code>ACCEPTED → RUNNING → FINISHED</code>, con resultado final <code>SUCCEEDED</code>, <code>FAILED</code> o <code>KILLED</code>.</td><td>Se ven en <code>localhost:8088</code> o con <code>yarn application -list</code>.</td></tr>
+  </table>
+
+  <h3>MapReduce: el flujo de un job</h3>
+  <svg viewBox="0 0 760 250" class="diagram" role="img" aria-label="Flujo de MapReduce: entrada, map, shuffle y ordenamiento, reduce, salida">
+    <text x="60" y="22" class="d-s" text-anchor="middle">Entrada (HDFS)</text>
+    <rect x="10" y="35" width="100" height="40" rx="6" class="d-b1"/><text x="60" y="60" class="d-s" text-anchor="middle">bloque 1</text>
+    <rect x="10" y="100" width="100" height="40" rx="6" class="d-b2"/><text x="60" y="125" class="d-s" text-anchor="middle">bloque 2</text>
+    <rect x="10" y="165" width="100" height="40" rx="6" class="d-b3"/><text x="60" y="190" class="d-s" text-anchor="middle">bloque 3</text>
+    <text x="215" y="22" class="d-s" text-anchor="middle">MAP (en paralelo)</text>
+    <rect x="160" y="35" width="110" height="40" rx="6" class="d-mr"/><text x="215" y="60" class="d-s" text-anchor="middle">map 1</text>
+    <rect x="160" y="100" width="110" height="40" rx="6" class="d-mr"/><text x="215" y="125" class="d-s" text-anchor="middle">map 2</text>
+    <rect x="160" y="165" width="110" height="40" rx="6" class="d-mr"/><text x="215" y="190" class="d-s" text-anchor="middle">map 3</text>
+    <path d="M112 55 H155 M112 120 H155 M112 185 H155" class="d-arrow"/>
+    <rect x="320" y="35" width="150" height="170" rx="10" class="d-box"/>
+    <text x="395" y="100" class="d-t" text-anchor="middle">SHUFFLE</text>
+    <text x="395" y="122" class="d-s" text-anchor="middle">agrupa y ordena</text>
+    <text x="395" y="140" class="d-s" text-anchor="middle">por clave</text>
+    <path d="M272 55 L315 90 M272 120 H315 M272 185 L315 150" class="d-arrow"/>
+    <text x="575" y="22" class="d-s" text-anchor="middle">REDUCE</text>
+    <rect x="520" y="95" width="110" height="50" rx="6" class="d-mr"/><text x="575" y="125" class="d-s" text-anchor="middle">reduce</text>
+    <path d="M472 120 H515" class="d-arrow"/>
+    <rect x="660" y="95" width="90" height="50" rx="6" class="d-box"/><text x="705" y="117" class="d-s" text-anchor="middle">part-00000</text><text x="705" y="135" class="d-s" text-anchor="middle">(HDFS)</text>
+    <path d="M632 120 H655" class="d-arrow"/>
+    <text x="215" y="232" class="d-s" text-anchor="middle">emite (clave, valor)</text>
+    <text x="575" y="232" class="d-s" text-anchor="middle">combina cada clave</text>
+  </svg>
+  <p>Ejemplo con el <b>Job 1 (promedio por categoría)</b>:</p>
+  <div class="grid3">
+    <div class="card"><b>1. Map</b><br><span class="small">Cada mapper lee su bloque línea por línea y emite <code>clave&nbsp;valor</code>:</span><pre class="mini">2026-09-21,electronica,Cali,1946600
+→ electronica   1946600</pre></div>
+    <div class="card"><b>2. Shuffle y orden</b><br><span class="small">Hadoop junta todas las parejas con la misma clave y se las manda ordenadas a un reducer:</span><pre class="mini">alimentos  12300
+alimentos  45100
+electronica 1946600 …</pre></div>
+    <div class="card"><b>3. Reduce</b><br><span class="small">El reducer recorre cada grupo y calcula el resultado:</span><pre class="mini">electronica  1403720.81
+  31503  44221416800.00</pre></div>
+  </div>
+  <p><b>Hadoop Streaming</b> permite escribir el mapper y el reducer en cualquier lenguaje (aquí Python): Hadoop les pasa las líneas por la entrada estándar (<code>stdin</code>) y lee lo que imprimen (<code>stdout</code>), con la clave y el valor separados por un tabulador. Por eso <b>Python debe estar instalado en los NodeManagers</b>, que son quienes ejecutan las tareas.</p>
+  <p>El <b>combiner</b> (usado en WordCount) es un "mini-reduce" que corre al final de cada map: en vez de mandar por la red 300.000 veces <code>la&nbsp;1</code>, cada map manda <code>la&nbsp;95000</code>. El resultado es el mismo, con mucho menos tráfico.</p>
+
+  <h3>Tolerancia a fallos: por qué no se pierde nada</h3>
+  <table>
+    <tr><th>Si falla…</th><th>Qué hace Hadoop</th></tr>
+    <tr><td>Un DataNode</td><td>El NameNode lo marca <b>Dead</b>, lee los bloques de la otra copia y, si hay otro nodo disponible, vuelve a copiarlos para recuperar la replicación.</td></tr>
+    <tr><td>Un DataNode mientras se escribe</td><td>El cliente saca al nodo caído del "pipeline" de escritura y sigue escribiendo en los que quedan.</td></tr>
+    <tr><td>Un NodeManager</td><td>El ResourceManager lo marca <b>LOST</b> y el ApplicationMaster vuelve a lanzar sus tareas en otro NodeManager.</td></tr>
+    <tr><td>Una tarea (bug, memoria, etc.)</td><td>Se reintenta hasta 4 veces; si todas fallan, el job termina <b>FAILED</b> y el error queda en los logs.</td></tr>
+  </table>
+
+  <h3>¿Y para qué nos sirve?</h3>
+  <ul>
+    <li>Es la base de cómo trabajan las plataformas de datos: Spark, Hive, los "data lakes" de AWS (EMR), Google (Dataproc) y Azure usan HDFS o su misma idea de bloques, réplicas y procesamiento distribuido.</li>
+    <li>Los mismos 3 patrones del taller aparecen en el trabajo real: <b>agregar por clave</b> (ventas por categoría, por ciudad, por mes), <b>contar</b> (palabras en reseñas para ver qué dicen los clientes) y <b>analizar logs</b> (horas pico para dimensionar servidores, horas con más errores para buscar fallas).</li>
+    <li>Docker permite simular un clúster de 8 máquinas en un portátil: lo mismo que se haría con servidores reales, sin pagar nube.</li>
+  </ul>
+</section>
+
+<section id="parteB">
+  <h2>Parte B · El taller paso a paso desde cero</h2>
+  <p>Esta parte está escrita para que alguien que nunca ha usado Hadoop pueda reconstruir todo sola. Cada paso dice <b>qué hacer</b>, <b>por qué</b> y <b>qué debe salir</b> (con la salida real que obtuvimos). Los comandos funcionan igual en PowerShell, macOS y Linux, salvo donde se indica.</p>
+
+  <div class="step" id="paso0">
+    <h3>Paso 0 · Requisitos</h3>
+    <ul class="check">
+      <li><b>Docker Desktop</b> instalado y abierto (la ballena de la barra de tareas en verde, "Engine running"). En Windows usa el backend WSL 2.</li>
+      <li><b>Memoria para Docker:</b> mínimo ~4 GB. El clúster son 8 contenedores Java; por eso en <code>hadoop.env</code> se limitó cada proceso a 256 MB. En Docker Desktop: <i>Settings → Resources</i> (o en WSL, el archivo <code>.wslconfig</code>).</li>
+      <li><b>Git</b> para clonar el repo, y <b>~5 GB libres</b> de disco (las imágenes de Hadoop pesan ~2 GB cada una la primera vez).</li>
+      <li>Puertos libres <code>9870</code>, <code>8088</code> y <code>8188</code>. Si otro laboratorio los usa, apágalo o cambia los puertos (ver <a href="#problemas">Parte D</a>).</li>
+    </ul>
+    <span class="lbl">Comprobar</span>
+<pre><code>docker --version
+docker compose version
+docker info --format "{{.MemTotal}}"   <span class="c"># memoria disponible para Docker, en bytes</span></code></pre>
+  </div>
+
+  <div class="step" id="paso1">
+    <h3>Paso 1 · Estructura del proyecto</h3>
+    <p>Clona el repo (o crea las carpetas a mano si lo haces desde cero):</p>
+<pre><code>git clone https://github.com/oraboni08/taller_hdfs.git
+cd taller_hdfs</code></pre>
+<pre class="out">taller_hdfs/
+├── docker-compose.yml        <span class="c"># define los 8 contenedores</span>
+├── hadoop.env                <span class="c"># configuración de Hadoop compartida por todos</span>
+├── docker/Dockerfile.python  <span class="c"># agrega Python 3 a las imágenes de Hadoop</span>
+├── jobs/                     <span class="c"># mappers y reducers en Python</span>
+│   ├── mapper_promedio.py   reducer_promedio.py
+│   ├── mapper_wordcount.py  reducer_wordcount.py
+│   ├── mapper_logs.py       reducer_logs.py
+│   └── mapper_con_error.py   <span class="c"># falla a propósito (prueba de fallos)</span>
+├── scripts/                  <span class="c"># se ejecutan DENTRO del contenedor client</span>
+│   ├── comun.sh              <span class="c"># funciones compartidas (correr_job, esperar_hdfs…)</span>
+│   ├── generar_datos.py      <span class="c"># crea los 3 datasets + resultados esperados</span>
+│   ├── 01_cargar_datos.sh  02_ejecutar_jobs.sh  03_validar.sh
+│   ├── 04_job_lento.sh  05_job_con_error.sh  estado.sh
+│   └── validar.py
+├── datasets/                 <span class="c"># se generan (no se suben a git)</span>
+└── docs/                     <span class="c"># esta guía + capturas</span></pre>
+    <div class="note"><b>Idea clave:</b> la carpeta del proyecto se monta dentro del contenedor <code>client</code> en <code>/workspace</code>. Así lo que editas en tu PC aparece al instante dentro del clúster, sin copiar nada.</div>
+  </div>
+
+  <div class="step" id="paso2">
+    <h3>Paso 2 · Configuración de Hadoop (<code>hadoop.env</code>)</h3>
+    <p>Usamos las imágenes <code>bde2020/hadoop-*</code> (Hadoop 3.2.1). Su script de arranque convierte variables de entorno en los XML de Hadoop: <code>CORE_CONF_*</code> → <code>core-site.xml</code>, <code>HDFS_CONF_*</code> → <code>hdfs-site.xml</code>, <code>YARN_CONF_*</code> → <code>yarn-site.xml</code>, <code>MAPRED_CONF_*</code> → <code>mapred-site.xml</code>. En el nombre, <code>_</code> = <code>.</code>, <code>__</code> = <code>_</code> y <code>___</code> = <code>-</code>.</p>
+    <p>Por ejemplo, <code>HDFS_CONF_dfs_replication=2</code> se vuelve la propiedad <code>dfs.replication = 2</code>.</p>
+    <table>
+      <tr><th>Variable</th><th>Valor</th><th>Por qué</th></tr>
+      <tr><td><code>CORE_CONF_fs_defaultFS</code></td><td><code>hdfs://namenode:9000</code></td><td>Dónde está el NameNode. Cuando escribes <code>/taller</code>, Hadoop entiende <code>hdfs://namenode:9000/taller</code>.</td></tr>
+      <tr><td><code>HDFS_CONF_dfs_replication</code></td><td>2</td><td>Una copia de cada bloque en cada DataNode. Con 3 (el valor por defecto) y solo 2 nodos, todo quedaría "sub-replicado" siempre.</td></tr>
+      <tr><td><code>HDFS_CONF_dfs_blocksize</code></td><td>4194304 (4 MB)</td><td>Para que archivos de ~10 MB se partan en varios bloques → varios maps en paralelo. En producción es 128 MB.</td></tr>
+      <tr><td><code>dfs_heartbeat_interval</code> + <code>heartbeat_recheck-interval</code></td><td>3 s / 15 000 ms</td><td>Un DataNode apagado se marca <b>Dead</b> en ~60 s (2×15 + 10×3) en vez de 10,5 min. Así se puede mostrar en clase.</td></tr>
+      <tr><td><code>YARN_CONF_yarn_resourcemanager_hostname</code></td><td><code>resourcemanager</code></td><td>Sin esto los NodeManagers no saben a quién reportarse.</td></tr>
+      <tr><td><code>yarn_nodemanager_aux-services</code></td><td><code>mapreduce_shuffle</code></td><td>Servicio que mueve los datos de los maps a los reduces (el "shuffle").</td></tr>
+      <tr><td><code>yarn_nodemanager_resource_memory-mb</code> / <code>cpu-vcores</code></td><td>1536 / 2</td><td>Recursos que cada NodeManager ofrece. Ajustado a un portátil.</td></tr>
+      <tr><td><code>yarn_nm_liveness-monitor_expiry-interval-ms</code></td><td>30000</td><td>Un NodeManager caído se marca <b>LOST</b> a los 30 s (por defecto 10 min).</td></tr>
+      <tr><td><code>yarn_log-aggregation-enable</code></td><td>true</td><td>Guarda los logs de cada job en HDFS para leerlos con <code>yarn logs</code>.</td></tr>
+      <tr><td><code>yarn_timeline-service_*</code></td><td>enabled, host = historyserver</td><td>El HistoryServer guarda el historial de aplicaciones terminadas.</td></tr>
+      <tr><td><b><code>MAPRED_CONF_mapreduce_framework_name</code></b></td><td><b>yarn</b></td><td><b>La más importante.</b> Sin ella los jobs corren en modo <i>local</i> dentro del cliente y nunca aparecen en YARN.</td></tr>
+      <tr><td><code>mapreduce_map/reduce_memory_mb</code>, <code>am_resource_mb</code></td><td>384 / 512</td><td>Memoria de cada tarea y del ApplicationMaster, para que quepan varias a la vez.</td></tr>
+      <tr><td><code>HADOOP_HEAPSIZE_MAX</code></td><td>256m</td><td>Límite de memoria de cada demonio Java (8 contenedores en ~4 GB).</td></tr>
+    </table>
+  </div>
+
+  <div class="step" id="paso3">
+    <h3>Paso 3 · Imagen con Python (<code>docker/Dockerfile.python</code>)</h3>
+    <p>Con Hadoop Streaming los mappers y reducers en Python <b>se ejecutan en los NodeManagers</b>, no en el cliente. Las imágenes oficiales de bde2020 no traen Python, así que creamos una imagen derivada:</p>
+<pre><code>ARG BASE_IMAGE
+FROM ${BASE_IMAGE}
+<span class="c"># Debian 9 "stretch" ya está archivado: hay que apuntar a archive.debian.org</span>
+RUN echo "deb http://archive.debian.org/debian stretch main" &gt; /etc/apt/sources.list \
+ &amp;&amp; echo "deb http://archive.debian.org/debian-security stretch/updates main" &gt;&gt; /etc/apt/sources.list \
+ &amp;&amp; echo 'Acquire::Check-Valid-Until "false";' &gt; /etc/apt/apt.conf.d/99no-check-valid-until \
+ &amp;&amp; apt-get update &amp;&amp; apt-get install -y --no-install-recommends python3 \
+ &amp;&amp; rm -rf /var/lib/apt/lists/*</code></pre>
+    <p>El mismo Dockerfile sirve para dos imágenes cambiando <code>BASE_IMAGE</code>: <code>hadoop-nodemanager</code> (para los 2 NodeManagers) y <code>hadoop-base</code> (para el cliente). Queda Python 3.5, por eso los scripts evitan sintaxis moderna como f-strings.</p>
+  </div>
+
+  <div class="step" id="paso4">
+    <h3>Paso 4 · <code>docker-compose.yml</code></h3>
+    <p>Define 8 servicios en una red <code>hdfs-net</code>, donde se encuentran por nombre (<code>namenode</code>, <code>datanode1</code>…). Un bloque común <code>x-hadoop</code> evita repetir <code>env_file</code>, red y plataforma.</p>
+    <table>
+      <tr><th>Servicio</th><th>Imagen</th><th>Detalle</th></tr>
+      <tr><td><code>namenode</code></td><td>bde2020/hadoop-namenode</td><td>Puerto web 9870. Volumen <code>namenode-data</code> (el índice sobrevive a reinicios).</td></tr>
+      <tr><td><code>datanode1</code>, <code>datanode2</code></td><td>bde2020/hadoop-datanode</td><td>Cada uno con su volumen. <code>SERVICE_PRECONDITION=namenode:9870</code>: espera a que el NameNode responda antes de arrancar.</td></tr>
+      <tr><td><code>resourcemanager</code></td><td>bde2020/hadoop-resourcemanager</td><td>Puerto web 8088. Espera a NameNode y DataNodes.</td></tr>
+      <tr><td><code>nodemanager1</code>, <code>nodemanager2</code></td><td>taller_hdfs/nodemanager-python (se construye)</td><td>nodemanager1 construye la imagen y nodemanager2 la reutiliza.</td></tr>
+      <tr><td><code>historyserver</code></td><td>bde2020/hadoop-historyserver</td><td>Puerto web 8188.</td></tr>
+      <tr><td><code>client</code></td><td>taller_hdfs/client-python (se construye)</td><td><code>command: tail -f /dev/null</code> para que quede encendido; monta el proyecto en <code>/workspace</code>.</td></tr>
+    </table>
+    <p>Los puertos del host se pueden cambiar sin editar el archivo: <code>"${PUERTO_HDFS:-9870}:9870"</code> usa 9870 salvo que definas la variable <code>PUERTO_HDFS</code>.</p>
+  </div>
+
+  <div class="step" id="paso5">
+    <h3>Paso 5 · Levantar y validar el clúster <span class="tag t-hdfs">Punto 1</span></h3>
+<pre><code>docker compose up -d --build   <span class="c"># la 1.ª vez descarga ~2 GB por imagen: 5-15 min</span>
+docker compose ps</code></pre>
+    <span class="lbl">Debe salir</span>
+<pre class="out">NAME              SERVICE           STATUS
+client            client            Up
+datanode1         datanode1         Up (healthy)
+datanode2         datanode2         Up (healthy)
+historyserver     historyserver     Up (healthy)
+namenode          namenode          Up (healthy)
+nodemanager1      nodemanager1      Up (healthy)
+nodemanager2      nodemanager2      Up (healthy)
+resourcemanager   resourcemanager   Up (healthy)</pre>
+    <p>Espera ~1 minuto a que todos digan <i>healthy</i>. Luego revisa el estado desde el cliente:</p>
+<pre><code>docker compose exec client bash scripts/estado.sh</code></pre>
+    <span class="lbl">Salida real (antes de las pruebas de fallos)</span>
+<pre class="out">==================== HDFS: DataNodes ====================
+Live datanodes (2):
+Hostname: datanode2      DFS Used: 36809614 (35.10 MB)
+Hostname: datanode1      DFS Used: 36809614 (35.10 MB)
+==================== YARN: NodeManagers ====================
+Total Nodes:2
+nodemanager1:35947   RUNNING   nodemanager1:8042
+nodemanager2:40999   RUNNING   nodemanager2:8042</pre>
+    <h4>Interfaces web</h4>
+    <table>
+      <tr><th>URL</th><th>Qué revisar</th></tr>
+      <tr><td><a href="http://localhost:9870">localhost:9870</a> (HDFS)</td><td><i>Overview</i>: "Live Nodes 2", "Dead Nodes 0". <i>Datanodes</i>: los dos en servicio. <i>Utilities → Browse the file system</i>: carpetas y bloques.</td></tr>
+      <tr><td><a href="http://localhost:8088">localhost:8088</a> (YARN)</td><td><i>Nodes</i>: 2 NodeManagers RUNNING. <i>Applications</i>: los jobs y su estado.</td></tr>
+      <tr><td><a href="http://localhost:8188">localhost:8188</a> (History)</td><td>Historial de aplicaciones terminadas.</td></tr>
+    </table>
+    <figure><img src="img/hdfs_overview.png" alt="Página Overview de HDFS"><figcaption>HDFS Overview (localhost:9870): capacidad, bloques y nodos vivos.</figcaption></figure>
+    <figure><img src="img/hdfs_datanodes.png" alt="Pestaña Datanodes de HDFS"><figcaption>Pestaña Datanodes: datanode1 y datanode2 en servicio.</figcaption></figure>
+    <figure><img src="img/yarn_nodes.png" alt="Nodos de YARN"><figcaption>YARN → Nodes (localhost:8088): los NodeManagers registrados.</figcaption></figure>
+  </div>
+
+  <div class="step" id="paso6">
+    <h3>Paso 6 · Datasets y carga a HDFS <span class="tag t-hdfs">Punto 2</span></h3>
+    <p><code>scripts/generar_datos.py</code> crea 3 datasets con semilla fija (siempre los mismos datos) y, <b>sin usar Hadoop</b>, calcula el resultado correcto de cada job en <code>datasets/esperado/</code>. Eso es lo que nos permite la validación manual.</p>
+    <table>
+      <tr><th>Dataset</th><th>Tamaño</th><th>Formato de cada línea</th></tr>
+      <tr><td><code>ventas.csv</code></td><td>260 000 ventas · 8,5 MB · 3 bloques</td><td><code>2026-09-21,electronica,Cali,1946600</code> (fecha, categoría, ciudad, valor)</td></tr>
+      <tr><td><code>resenas.txt</code></td><td>150 000 reseñas · 11 MB · 3 bloques</td><td>Una reseña de cliente en texto libre</td></tr>
+      <tr><td><code>logs_servidor.log</code></td><td>280 000 líneas · 14 MB · 4 bloques</td><td><code>2026-11-08 14:23:11 INFO GET /api/productos 200 123ms</code></td></tr>
+    </table>
+    <h4>Estructura en HDFS</h4>
+<pre class="out">/taller/input/ventas/ventas.csv
+/taller/input/resenas/resenas.txt
+/taller/input/logs/logs_servidor.log
+/taller/output/promedio   /taller/output/wordcount   /taller/output/logs   <span class="c"># las crean los jobs</span></pre>
+    <p>Cada dataset va en su propia carpeta porque Hadoop recibe <b>una carpeta</b> como entrada y procesa todos los archivos que tenga.</p>
+<pre><code>docker compose exec client bash scripts/01_cargar_datos.sh</code></pre>
+    <p>Por dentro hace: <code>python3 scripts/generar_datos.py</code>, <code>hdfs dfs -mkdir -p …</code>, <code>hdfs dfs -put -f …</code> y <code>hdfs fsck … -files -blocks -locations</code>.</p>
+    <span class="lbl">Salida real</span>
+<pre class="out">-rw-r--r--   2 root supergroup   14322599 2026-11-12 11:09 /taller/input/logs/logs_servidor.log
+-rw-r--r--   2 root supergroup   11738116 2026-11-12 11:08 /taller/input/resenas/resenas.txt
+-rw-r--r--   2 root supergroup    8941651 2026-11-12 11:08 /taller/input/ventas/ventas.csv
+==================== Bloques y réplicas (hdfs fsck) ====================
+/taller/input/ventas/ventas.csv 8941651 bytes, replicated: replication=2, 3 block(s):  OK
+0. blk_1073741825 len=4194304 Live_repl=2  [172.20.0.4, 172.20.0.2]
+1. blk_1073741826 len=4194304 Live_repl=2  [172.20.0.4, 172.20.0.2]
+2. blk_1073741827 len=553043  Live_repl=2  [172.20.0.2, 172.20.0.4]
+ Total blocks (validated):  10 (avg. block size 3500236 B)
+ Under-replicated blocks:   0 (0.0 %)
+ Average block replication: 2.0
+The filesystem under path '/taller/input' is HEALTHY</pre>
+    <div class="okbox"><b>Cómo leerlo:</b> el <code>2</code> después de los permisos es el factor de replicación. <code>ventas.csv</code> quedó en 3 bloques (4 + 4 + 0,5 MB), cada uno con <code>Live_repl=2</code> y dos IPs: una copia en cada DataNode. En total 10 bloques, todos sanos.</div>
+    <figure><img src="img/hdfs_explorer.png" alt="Explorador de archivos de HDFS"><figcaption>Utilities → Browse the file system: los datasets en /taller/input con replicación 2 y bloques de 4 MB.</figcaption></figure>
+  </div>
+
+  <div class="step" id="paso7">
+    <h3>Paso 7 · Los 3 jobs MapReduce <span class="tag t-mr">Punto 2</span></h3>
+    <p>Cada job son dos scripts Python que leen de <code>stdin</code> y escriben en <code>stdout</code> líneas <code>clave&lt;TAB&gt;valor</code>. Hadoop ordena por clave entre el map y el reduce, así que el reducer recibe juntas todas las líneas de la misma clave y solo tiene que detectar cuándo cambia.</p>
+
+    <h4>Job 1 · Promedio de ventas por categoría</h4>
+<pre><code><span class="c"># mapper_promedio.py  (resumido)</span>
+for linea in entrada:
+    partes = linea.strip().split(",")
+    if len(partes) != 4 or partes[0] == "fecha":   <span class="c"># salta encabezado</span>
+        continue
+    salida.write("%s\t%s\n" % (partes[1], partes[3]))   <span class="c"># categoria  valor</span>
+
+<span class="c"># reducer_promedio.py  (resumido)</span>
+for linea in entrada:
+    categoria, valor = linea.rstrip("\n").split("\t")
+    if categoria != actual:            <span class="c"># cambió la clave → emitir la anterior</span>
+        if actual is not None: emitir()   <span class="c"># categoria  promedio  cantidad  total</span>
+        actual, suma, cantidad = categoria, 0.0, 0
+    suma += float(valor); cantidad += 1
+if actual is not None: emitir()</code></pre>
+
+    <h4>Job 2 · WordCount con combiner</h4>
+    <p>El mapper pasa cada reseña a minúsculas, extrae palabras con la expresión <code>[a-záéíóúüñ]+</code> y emite <code>palabra 1</code>. El reducer suma. El mismo reducer se usa como <b>combiner</b> (<code>-combiner "python3 reducer_wordcount.py"</code>), que hace sumas parciales en cada map.</p>
+
+    <h4>Job 3 · Horas pico y errores en logs</h4>
+    <p>El mapper toma la hora (<code>14</code> de <code>14:23:11</code>) y emite <code>hora 1 es_error</code>, donde <code>es_error = 1</code> si el nivel es ERROR o el código HTTP ≥ 500. El reducer suma peticiones y errores y calcula el porcentaje.</p>
+
+    <h4>Probar los scripts sin Hadoop (recomendado antes de lanzar)</h4>
+    <p>Un job de Streaming es equivalente a <code>mapper | sort | reducer</code>. Probarlo así detecta errores en segundos:</p>
+<pre><code>docker compose exec client bash -c "head -2000 datasets/ventas.csv | python3 jobs/mapper_promedio.py | sort | python3 jobs/reducer_promedio.py"</code></pre>
+
+    <h4>Lanzarlos en YARN</h4>
+<pre><code>docker compose exec client bash scripts/02_ejecutar_jobs.sh            <span class="c"># los 3</span>
+docker compose exec client bash scripts/02_ejecutar_jobs.sh wordcount  <span class="c"># solo uno</span></code></pre>
+    <p>Para cada job el script ejecuta (función <code>correr_job</code> de <code>comun.sh</code>):</p>
+<pre><code>hdfs dfs -rm -r -f -skipTrash /taller/output/promedio     <span class="c"># Hadoop NO sobreescribe una salida existente</span>
+hadoop jar /opt/hadoop-3.2.1/share/hadoop/tools/lib/hadoop-streaming-3.2.1.jar \
+  -D mapreduce.job.name="taller-promedio" \
+  -D mapreduce.job.reduces=1 \
+  -files "jobs/mapper_promedio.py,jobs/reducer_promedio.py" \   <span class="c"># copia los .py a cada NodeManager</span>
+  -mapper  "python3 mapper_promedio.py" \
+  -reducer "python3 reducer_promedio.py" \
+  -input   /taller/input/ventas \
+  -output  /taller/output/promedio</code></pre>
+    <table>
+      <tr><th>Opción</th><th>Para qué</th></tr>
+      <tr><td><code>-D mapreduce.job.name</code></td><td>Nombre que se ve en YARN (<code>taller-promedio</code>…).</td></tr>
+      <tr><td><code>-D mapreduce.job.reduces=1</code></td><td>Un solo reducer → un solo archivo de salida <code>part-00000</code>, fácil de comparar.</td></tr>
+      <tr><td><code>-files</code></td><td>Distribuye los scripts a los nodos que ejecutan las tareas.</td></tr>
+      <tr><td><code>-input</code> / <code>-output</code></td><td>Carpeta de entrada y de salida en HDFS (la de salida no debe existir).</td></tr>
+    </table>
+    <span class="lbl">Salida real (resumida)</span>
+<pre class="out">INFO impl.YarnClientImpl: Submitted application application_1794481638538_0001
+INFO mapreduce.Job:  map 0% reduce 0%
+INFO mapreduce.Job:  map 100% reduce 0%
+INFO mapreduce.Job:  map 100% reduce 100%
+INFO mapreduce.Job: Job job_1794481638538_0001 completed successfully
+alimentos    42480.41    77749   3302809300.00
+deportes     320257.54   23315   7466804600.00
+electronica  1403720.81  31503   44221416800.00
+hogar        209572.94   46569   9759602200.00
+libros       68018.20    15498   1054146100.00
+ropa         140300.93   65366   9170910500.00
+
+Top 10 palabras:            hora peticiones errores %error
+el      180176              12   23256  2118  9.11
+la      119824              13   21996  1944  8.84
+y       98171               19   26069  2371  9.10
+lo      56048               20   29290  2657  9.07   <span class="c"># hora pico</span>
+fue     51843               ...
+llegó   51576</pre>
+    <div class="note"><b>Interpretación:</b> electrónica tiene el ticket promedio más alto (≈ $1,4 M) aunque alimentos tiene más ventas. En los logs, la hora pico es las 20:00 (29 290 peticiones) y las horas 12-13 y 19-20 tienen ~9 % de errores frente a ~3 % en el resto: el servidor falla cuando hay más carga.</div>
+    <figure><img src="img/yarn_apps.png" alt="Aplicaciones en YARN"><figcaption>YARN → Applications: los jobs taller-* con State FINISHED y FinalStatus SUCCEEDED.</figcaption></figure>
+  </div>
+
+  <div class="step" id="paso8">
+    <h3>Paso 8 · Validación manual de resultados <span class="tag t-mr">Punto 2</span></h3>
+<pre><code>docker compose exec client bash scripts/03_validar.sh</code></pre>
+    <p>Para cada job: lista la carpeta de salida (<code>hdfs dfs -ls</code>), descarga la salida (<code>hdfs dfs -cat … &gt; resultados/job.tsv</code>) y la compara clave por clave con <code>datasets/esperado/job.tsv</code> usando <code>validar.py</code>.</p>
+    <span class="lbl">Salida real</span>
+<pre class="out">==================== Validando promedio ====================
+-rw-r--r--   2 root supergroup    0 2026-11-12 11:10 /taller/output/promedio/_SUCCESS
+-rw-r--r--   2 root supergroup  229 2026-11-12 11:10 /taller/output/promedio/part-00000
+  claves comparadas: 6
+  RESULTADO: OK, la salida de Hadoop coincide 100 % con el cálculo esperado
+==================== Validando wordcount ====================
+  claves comparadas: 67
+  RESULTADO: OK, la salida de Hadoop coincide 100 % con el cálculo esperado
+==================== Validando logs ====================
+  claves comparadas: 24
+  RESULTADO: OK, la salida de Hadoop coincide 100 % con el cálculo esperado</pre>
+    <div class="okbox">El archivo vacío <code>_SUCCESS</code> lo crea Hadoop solo cuando el job terminó bien. <code>part-00000</code> es la salida del reducer 0.</div>
+    <p>También puedes validar a mano un dato. Por ejemplo, cuántas ventas de "libros" hay:</p>
+<pre><code>docker compose exec client bash -c "grep -c ',libros,' datasets/ventas.csv"   <span class="c"># → 15498, igual que el job</span></code></pre>
+  </div>
+
+  <div class="step" id="paso9">
+    <h3>Paso 9 · Verificar la ejecución en YARN y logs <span class="tag t-yarn">Punto 3</span></h3>
+<pre><code>docker compose exec client bash
+<span class="c"># ---- ya dentro del contenedor ----</span>
+yarn application -list -appStates ALL       <span class="c"># todas las aplicaciones con su estado final</span>
+yarn application -status application_1794481638538_0001
+yarn logs -applicationId application_1794481638538_0001 | less   <span class="c"># logs de todos los contenedores</span>
+hdfs dfs -ls -R /taller/output
+hdfs dfs -cat /taller/output/logs/part-00000
+exit
+<span class="c"># ---- desde tu PC: logs de los contenedores de Hadoop ----</span>
+docker compose logs --tail 50 resourcemanager
+docker compose logs --tail 50 namenode</code></pre>
+    <span class="lbl">Salida real al final del taller</span>
+<pre class="out">application_1794481638538_0001   taller-promedio        FINISHED   SUCCEEDED
+application_1794481638538_0002   taller-wordcount       FINISHED   SUCCEEDED
+application_1794481638538_0003   taller-logs            FINISHED   SUCCEEDED
+application_1794481638538_0004   taller-promedio-lento  FINISHED   SUCCEEDED
+application_1794481638538_0005   taller-con-error       FINISHED   FAILED</pre>
+    <p>Fragmento de <code>yarn logs</code>: el ApplicationMaster lanzando los 3 maps (uno por bloque) y marcándolos terminados:</p>
+<pre class="out">Container: container_1794481638538_0001_01_000001 on nodemanager1_35947
+LogAggregationType: AGGREGATED
+... JobImpl: JOB_CREATE job_1794481638538_0001
+... ATTEMPT_START task_1794481638538_0001_m_000000
+... ATTEMPT_START task_1794481638538_0001_m_000001
+... ATTEMPT_START task_1794481638538_0001_m_000002
+... Task succeeded with attempt attempt_1794481638538_0001_m_000002_0
+... task_1794481638538_0001_m_000002 Task Transitioned from RUNNING to SUCCEEDED</pre>
+    <table>
+      <tr><th>Estado</th><th>Dónde lo vimos</th></tr>
+      <tr><td><b>RUNNING</b></td><td>En YARN → Applications → RUNNING mientras corría el job lento (captura abajo).</td></tr>
+      <tr><td><b>SUCCEEDED</b></td><td>Los 3 jobs principales y el job lento (incluso después de perder un NodeManager).</td></tr>
+      <tr><td><b>FAILED</b></td><td>El job con el mapper defectuoso (prueba 4).</td></tr>
+    </table>
+    <figure><img src="img/yarn_running.png" alt="Aplicación en estado RUNNING"><figcaption>Un job en estado RUNNING: 4 contenedores, 1,63 GB de memoria usada, y "Lost Nodes 1" por la prueba del NodeManager.</figcaption></figure>
+    <figure><img src="img/history.png" alt="Historial de aplicaciones"><figcaption>HistoryServer (localhost:8188): las 5 aplicaciones; taller-con-error terminó FAILED y las demás SUCCEEDED.</figcaption></figure>
+    <div class="note"><b>Cómo leer los IDs:</b> <code>application_1794481638538_0004</code> = aplicación n.º 4 desde que arrancó el ResourceManager. <code>attempt_…_0004_m_000002_1</code> = job 4, tarea <b>m</b>ap n.º 2, <b>intento</b> n.º 1 (el segundo, porque empiezan en 0). Una <b>r</b> en vez de <b>m</b> es una tarea reduce.</div>
+  </div>
+
+  <div class="step" id="paso10">
+    <h3>Paso 10 · Pruebas de tolerancia a fallos <span class="tag t-hdfs">Punto 4</span></h3>
+    <p>Abre dos terminales en la carpeta del proyecto: una para provocar el fallo y otra para observar. Antes de empezar confirma con <code>scripts/estado.sh</code> que todo está sano.</p>
+
+    <h4>Prueba 1 · Apagar un DataNode</h4>
+<pre><code>docker compose stop datanode2
+<span class="c"># esperar ~60-70 s (los latidos dejan de llegar y el NameNode lo declara muerto)</span>
+docker compose exec client bash scripts/estado.sh
+docker compose exec client bash -c "hdfs fsck /taller/input"
+docker compose exec client bash -c "hdfs dfs -cat /taller/input/ventas/ventas.csv | wc -l"</code></pre>
+    <span class="lbl">Salida real</span>
+<pre class="out">### 06:12:51 docker compose stop datanode2
+### 06:12:55 estado inmediato
+Live datanodes (2):              <span class="c"># aún no se ha dado cuenta</span>
+### ~70 s después: hdfs dfsadmin -report
+    Under replicated blocks: 28
+    Missing blocks: 0
+Live datanodes (1):   Hostname: datanode1
+Dead datanodes (1):   Hostname: datanode2
+### hdfs fsck /taller/input
+ Under-replicated blocks:   10 (100.0 %)
+ Average block replication: 1.0
+ Missing blocks:            0
+The filesystem under path '/taller/input' is HEALTHY
+### leer un archivo con un DataNode caído
+260001                           <span class="c"># las 260 000 ventas + encabezado: el archivo está completo</span></pre>
+    <p>En la web de HDFS (<a href="http://localhost:9870">localhost:9870</a>) se ve lo mismo:</p>
+    <figure><img src="img/hdfs_dead_overview.png" alt="Overview de HDFS con un nodo muerto"><figcaption>Overview con datanode2 apagado: Live Nodes 1, Dead Nodes 1 y 48 bloques sub-replicados (todos los archivos de HDFS, incluidas las salidas y los logs de los jobs).</figcaption></figure>
+    <figure><img src="img/hdfs_dead_datanodes.png" alt="Pestaña Datanodes con datanode2 caído"><figcaption>Pestaña Datanodes: datanode1 en servicio (check verde) y datanode2 en rojo ("Down"), con la hora de su último contacto.</figcaption></figure>
+    <p>Luego se vuelve a encender:</p>
+<pre><code>docker compose start datanode2
+docker compose exec client bash scripts/estado.sh</code></pre>
+<pre class="out">### 06:14:57 estado tras reintegrar (25 s después)
+    Under replicated blocks: 0
+Live datanodes (2):
+ Average block replication: 2.0
+The filesystem under path '/taller/input' is HEALTHY</pre>
+    <div class="okbox"><b>Conclusión:</b> el NameNode detectó el nodo muerto en ~1 minuto. Todos los bloques quedaron con una sola copia (<i>under-replicated</i>), pero <b>ningún dato se perdió</b> (<i>Missing blocks: 0</i>) y los archivos se siguieron leyendo desde datanode1. Al volver datanode2, el sistema regresó solo a 2 réplicas y a estado HEALTHY. Con solo 2 DataNodes no hay un tercero adonde re-replicar mientras uno está caído; con 3 o más, HDFS copiaría los bloques a otro nodo automáticamente.</div>
+
+    <h4>Prueba 2 · Reiniciar un contenedor durante una escritura en HDFS</h4>
+<pre><code><span class="c"># Terminal 1: subir un archivo de 14 MB</span>
+docker compose exec client bash -c "hdfs dfs -mkdir -p /taller/prueba &amp;&amp; time hdfs dfs -put -f datasets/logs_servidor.log /taller/prueba/copia.log; echo EXIT_PUT=\$?"
+<span class="c"># Terminal 2: inmediatamente (a los 2-5 s)</span>
+docker compose restart datanode1</code></pre>
+    <span class="lbl">Salida real</span>
+<pre class="out">### 06:15:19 inicia el put       ### 06:15:25 docker compose restart datanode1
+WARN hdfs.DataStreamer: Exception for BP-…:blk_1073741879_1055
+java.io.IOException: Connection reset by peer
+WARN hdfs.DataStreamer: Error Recovery for …blk_1073741879_1055 in pipeline [… 172.20.0.4:9866 …]
+WARN hdfs.DataStreamer: Abandoning BP-…:blk_1073741880_1057
+WARN hdfs.DataStreamer: Excluding datanode DatanodeInfoWithStorage[172.20.0.4:9866,…]
+real  0m6.608s
+EXIT_PUT=0
+### verificación de integridad
+md5 local : 77b3e925655d8467946f4c5ba3564a02
+md5 HDFS  : 77b3e925655d8467946f4c5ba3564a02
+-rw-r--r--   2 root supergroup   14322599 2026-11-12 11:15 /taller/prueba/copia.log</pre>
+    <p>La verificación se hace comparando la huella MD5 del archivo original y la copia en HDFS:</p>
+<pre><code>docker compose exec client bash -c "md5sum datasets/logs_servidor.log; hdfs dfs -cat /taller/prueba/copia.log | md5sum"</code></pre>
+    <div class="okbox"><b>Conclusión:</b> el cliente escribe cada bloque en un <b>pipeline</b> (cliente → DataNode A → DataNode B). Cuando datanode1 (172.20.0.4) se cayó, el cliente lo detectó ("Connection reset"), lo <b>excluyó</b> del pipeline y siguió escribiendo con el otro nodo. El <code>put</code> terminó con código 0 y el archivo quedó idéntico (mismo MD5). Al volver el nodo, HDFS completó la segunda réplica.</div>
+
+    <h4>Prueba 3 · Detener un NodeManager mientras corre un job</h4>
+    <p><code>04_job_lento.sh</code> corre el mismo job de promedio pero con una pausa en el mapper (<code>RETARDO_MS=1500</code> cada 1000 líneas) para que dure ~4 minutos y dé tiempo de provocar el fallo.</p>
+<pre><code><span class="c"># Terminal 1</span>
+docker compose exec client bash scripts/04_job_lento.sh
+<span class="c"># Terminal 2: cuando el job ya esté en "map 20%" o más</span>
+docker compose exec client bash -c "yarn node -list -all"   <span class="c"># ver en qué nodos hay contenedores</span>
+docker compose stop nodemanager2
+docker compose exec client bash -c "yarn node -list -all"   <span class="c"># repetir cada ~10 s</span></code></pre>
+    <span class="lbl">Salida real</span>
+<pre class="out">### 06:16:30 contenedores por NodeManager antes del fallo
+nodemanager1:35947   RUNNING   3
+nodemanager2:40999   RUNNING   1
+### 06:16:35 docker compose stop nodemanager2
+[06:17:02] nodemanager2:40999   RUNNING   1    <span class="c"># todavía no lo detecta</span>
+[06:17:14] nodemanager2:40999   LOST      1    <span class="c"># ~30-40 s: marcado LOST</span>
+[06:17:41] nodemanager2:40999   LOST      0
+
+<span class="c"># progreso del job (terminal 1)</span>
+map 31% reduce 0%
+map 32% reduce 0%
+map 17% reduce 0%     <span class="c"># ¡retrocede! se perdió el avance de la tarea que corría en nodemanager2</span>
+map 18% reduce 0%
+...
+Job job_1794481638538_0004 completed successfully
+
+<span class="c"># yarn logs del ApplicationMaster</span>
+11:16:16 Assigned container …_000004 to attempt_…_0004_m_000002_0
+11:17:31 Killing taskAttempt:attempt_…_0004_m_000002_0 because it is running on unusable node:nodemanager2:40999
+11:17:31 Diagnostics report from attempt_…_0004_m_000002_0: Container released on a *lost* node
+11:19:25 Assigned container …_000006 to attempt_…_0004_m_000002_1     <span class="c"># reintento en otro nodo</span>
+
+Resultado:  alimentos 42480.41 77749 …  (idéntico al job normal)</pre>
+    <div class="okbox"><b>Conclusión:</b> el ResourceManager dejó de recibir latidos de nodemanager2 y lo marcó <b>LOST</b>. El ApplicationMaster mató el intento <code>m_000002_0</code> que corría allí y lanzó un nuevo intento (<code>m_000002_1</code>) en nodemanager1. El job terminó <b>SUCCEEDED</b> con el resultado correcto. Por eso el progreso "retrocedió" de 32 % a 17 %: se repitió el trabajo perdido.</div>
+    <p>Para volver a la normalidad: <code>docker compose start nodemanager2</code>. Se registra con un puerto nuevo, por eso <code>yarn node -list -all</code> muestra después 2 RUNNING + el viejo como LOST (es solo historial).</p>
+
+    <h4>Prueba 4 · Fallo dentro de un proceso Map</h4>
+    <p><code>mapper_con_error.py</code> lanza una excepción al leer la primera línea. Simula un bug en el código del job.</p>
+<pre><code>docker compose exec client bash scripts/05_job_con_error.sh</code></pre>
+    <span class="lbl">Salida real</span>
+<pre class="out">Task Id : attempt_1794481638538_0005_m_000000_0, Status : FAILED
+Error: java.lang.RuntimeException: PipeMapRed.waitOutputThreads(): subprocess failed with code 1
+Task Id : attempt_1794481638538_0005_m_000001_0, Status : FAILED
+...
+Task Id : attempt_1794481638538_0005_m_000002_2, Status : FAILED
+Job job_1794481638538_0005 failed with state FAILED due to: Task failed task_1794481638538_0005_m_000001
+Job failed as tasks failed. failedMaps:1 failedReduces:0
+        Failed map tasks=10
+        Launched map tasks=11
+Streaming Command Failed!
+Código de salida del job: 1 (distinto de 0 = falló)</pre>
+    <p>El mensaje de Hadoop no dice cuál fue el error de Python. Para verlo se leen los logs de la aplicación:</p>
+<pre><code>docker compose exec client bash -c "yarn logs -applicationId application_1794481638538_0005 | grep -A4 Traceback"</code></pre>
+<pre class="out">Traceback (most recent call last):
+  File "mapper_con_error.py", line 8, in &lt;module&gt;
+    raise RuntimeError("Error simulado en el mapper: %s" % linea[:40])
+RuntimeError: Error simulado en el mapper: fecha,categoria,ciudad,valor</pre>
+    <div class="badbox"><b>Conclusión:</b> YARN reintentó cada tarea map hasta 4 veces (<code>mapreduce.map.maxattempts</code>, intentos <code>_0</code> a <code>_3</code>), en distintos nodos. Como el error está en el código y no en una máquina, todos los intentos fallaron y el job terminó <b>FAILED</b> sin escribir salida (no hay <code>_SUCCESS</code>). Diferencia con la prueba 3: los reintentos arreglan fallos de <b>infraestructura</b>, no errores de <b>programación</b>.</div>
+
+    <h4>Resumen de las pruebas</h4>
+    <table>
+      <tr><th>Prueba</th><th>Lo que se observó</th><th>Mecanismo de Hadoop</th></tr>
+      <tr><td>1. DataNode apagado</td><td>Dead node en ~70 s, 10 bloques sub-replicados, 0 perdidos, archivos legibles; HEALTHY al volver.</td><td>Heartbeats + replicación</td></tr>
+      <tr><td>2. Reinicio durante <code>put</code></td><td>"Excluding datanode", <code>put</code> exitoso, MD5 idéntico.</td><td>Recuperación del pipeline de escritura</td></tr>
+      <tr><td>3. NodeManager detenido</td><td>LOST en ~40 s, intento matado y relanzado en otro nodo, job SUCCEEDED.</td><td>Liveness monitor + reintento de tareas</td></tr>
+      <tr><td>4. Mapper con bug</td><td>4 intentos por tarea, job FAILED, error visible en <code>yarn logs</code>.</td><td>maxattempts + log aggregation</td></tr>
+    </table>
+  </div>
+
+  <div class="step" id="paso11">
+    <h3>Paso 11 · Apagar</h3>
+<pre><code>docker compose down       <span class="c"># apaga y conserva los datos de HDFS (volúmenes)</span>
+docker compose down -v    <span class="c"># apaga y BORRA los datos de HDFS</span></code></pre>
+    <p>Si la próxima vez levantas con <code>docker compose up -d</code> sin <code>-v</code>, los datasets siguen en HDFS y puedes ir directo al paso 7.</p>
+  </div>
+</section>
+
+<section id="cambios">
+  <h2>Parte C · Qué se corrigió del repo original</h2>
+  <p>La primera versión del repo levantaba el clúster y tenía 3 jobs, pero no cumplía los puntos 3 y 4 del taller. Cambios (rama <code>mejoras-taller</code>):</p>
+  <table>
+    <tr><th>Problema</th><th>Consecuencia</th><th>Corrección</th></tr>
+    <tr><td>Faltaba <code>mapreduce.framework.name=yarn</code></td><td>Los jobs corrían en modo local dentro del cliente: no aparecían en YARN y detener un NodeManager no tenía efecto.</td><td>Agregado en <code>hadoop.env</code>, más memoria de tareas y ApplicationMaster.</td></tr>
+    <tr><td>Faltaba <code>yarn.resourcemanager.hostname</code></td><td>El NodeManager no encontraba al ResourceManager.</td><td>Agregado.</td></tr>
+    <tr><td>Python solo en el cliente</td><td>En YARN las tareas corren en los NodeManagers y fallarían con "python3: not found".</td><td><code>Dockerfile.python</code> para NodeManagers y cliente; scripts enviados con <code>-files</code>.</td></tr>
+    <tr><td>Replicación 3 con 2 DataNodes</td><td>Todo quedaba sub-replicado desde el inicio; confunde la prueba de fallos.</td><td><code>dfs.replication=2</code>.</td></tr>
+    <tr><td>Un solo NodeManager</td><td>Al detenerlo no había adónde mover las tareas.</td><td>Dos NodeManagers + HistoryServer.</td></tr>
+    <tr><td>Datasets pequeños (1 bloque)</td><td>Un solo map; no se ve el paralelismo ni el reparto de bloques.</td><td>Generador con 8-14 MB por dataset y bloques de 4 MB.</td></tr>
+    <tr><td>Detección de fallos en 10 min</td><td>Imposible mostrar Dead / LOST en clase.</td><td>Heartbeats ajustados: ~60 s (DataNode) y 30 s (NodeManager).</td></tr>
+    <tr><td>Sin validación ni logs</td><td>No se podía demostrar que el resultado era correcto.</td><td>Resultados esperados + <code>validar.py</code>, agregación de logs y scripts numerados.</td></tr>
+  </table>
+</section>
+
+<section id="problemas">
+  <h2>Parte D · Problemas comunes</h2>
+  <table>
+    <tr><th>Síntoma</th><th>Causa / solución</th></tr>
+    <tr><td><code>failed to connect to the docker API … dockerDesktopLinuxEngine</code></td><td>Docker Desktop está cerrado. Ábrelo y espera a que diga "Engine running".</td></tr>
+    <tr><td><code>Bind for 0.0.0.0:9870 failed: port is already allocated</code></td><td>Otro clúster usa el puerto. Apágalo, o en PowerShell: <code>$env:PUERTO_HDFS=19870; $env:PUERTO_YARN=18088; $env:PUERTO_HISTORY=18188; docker compose up -d</code></td></tr>
+    <tr><td><code>no configuration file provided: not found</code></td><td>Estás en otra carpeta. Haz <code>cd</code> a la que tiene <code>docker-compose.yml</code>.</td></tr>
+    <tr><td><code>Name node is in safe mode</code></td><td>El NameNode acaba de arrancar. Espera ~30 s (los scripts ya esperan solos).</td></tr>
+    <tr><td><code>Output directory … already exists</code></td><td>Hadoop no sobreescribe. <code>hdfs dfs -rm -r /taller/output/&lt;job&gt;</code> (los scripts lo hacen solos).</td></tr>
+    <tr><td>El job se queda en <code>ACCEPTED</code></td><td>No hay memoria libre en YARN o los NodeManagers no están registrados. Revisa <code>yarn node -list</code> y la memoria de Docker.</td></tr>
+    <tr><td>Contenedores que se reinician solos (Exited 137)</td><td>Docker se quedó sin memoria. Cierra otros contenedores o sube la memoria de Docker.</td></tr>
+    <tr><td><code>subprocess failed with code 1/2</code></td><td>Error en el script Python. Pruébalo con <code>mapper | sort | reducer</code> y lee el Traceback con <code>yarn logs</code>.</td></tr>
+    <tr><td><code>hdfs fsck /</code> muestra unos pocos bloques <i>under-replicated</i> que nunca bajan a 0</td><td>Son archivos de <code>/tmp/hadoop-yarn/staging/…</code> (el <code>job.jar</code>, los .py y el <code>job.split</code> de un job interrumpido). MapReduce los sube con replicación 10 para que muchos nodos los descarguen rápido, y con 2 DataNodes nunca se alcanza. No es un error: revisa <code>hdfs fsck /taller</code>, que es donde están los datos. Si quieres borrarlos: <code>hdfs dfs -rm -r /tmp/hadoop-yarn/staging/root/.staging/job_*</code>.</td></tr>
+    <tr><td>Scripts con <code>\r: command not found</code></td><td>Finales de línea de Windows. El repo tiene <code>.gitattributes</code> para forzar LF; si editas con Notepad, guarda en formato LF.</td></tr>
+  </table>
+</section>
+
+<section id="preguntas">
+  <h2>Parte E · Preguntas probables en la sustentación</h2>
+  <details><summary>¿Por qué el NameNode es un punto crítico?</summary><p>Porque es el único que sabe qué bloques forman cada archivo. Si se cae, los datos siguen en los DataNodes pero nadie puede encontrarlos. En producción se usa NameNode en alta disponibilidad (uno activo y otro en espera). En nuestro clúster hay uno solo.</p></details>
+  <details><summary>¿Por qué bloques de 4 MB si lo normal es 128 MB?</summary><p>Para que nuestros archivos de ~10 MB se partan en varios bloques y se vea el paralelismo (un map por bloque) y la distribución entre nodos. Con 128 MB cada archivo sería un solo bloque y un solo map.</p></details>
+  <details><summary>¿Qué pasa si se cae un DataNode y la replicación fuera 3 con 4 nodos?</summary><p>El NameNode lo marca muerto y ordena copiar los bloques que quedaron con 2 réplicas a otro nodo vivo hasta volver a 3. En nuestro caso, con 2 nodos, no hay adónde copiar, por eso quedan sub-replicados hasta que el nodo vuelve.</p></details>
+  <details><summary>¿Cuál es la diferencia entre HDFS y YARN?</summary><p>HDFS almacena (NameNode + DataNodes). YARN asigna recursos y ejecuta (ResourceManager + NodeManagers). Son independientes: el NodeManager puede caerse sin afectar los datos, y el DataNode puede caerse sin detener un job si hay otra réplica.</p></details>
+  <details><summary>¿Qué es el shuffle?</summary><p>La fase entre map y reduce: Hadoop agrupa las salidas de todos los maps por clave, las ordena y las envía al reducer correspondiente. Por eso el reducer recibe juntas todas las líneas de "electronica".</p></details>
+  <details><summary>¿Para qué sirve el combiner y por qué no se usó en el promedio?</summary><p>Reduce el tráfico de red haciendo sumas parciales en cada map. Funciona en WordCount porque sumar sumas parciales da lo mismo. En el promedio no se puede usar el mismo reducer: el promedio de promedios no es el promedio total (habría que enviar suma y cantidad).</p></details>
+  <details><summary>¿Por qué la prueba 3 terminó SUCCEEDED y la 4 FAILED si en ambas fallaron tareas?</summary><p>En la 3 falló la máquina: el reintento en otro nodo funcionó. En la 4 falló el código: falla igual en cualquier nodo, se agotan los 4 intentos y el job falla.</p></details>
+  <details><summary>¿Qué es Hadoop Streaming?</summary><p>Una utilidad que permite escribir map y reduce en cualquier lenguaje. Hadoop envía las líneas por stdin y lee stdout; la clave es lo que va antes del primer tabulador.</p></details>
+</section>
+
+<footer class="small" style="border-top:1px solid var(--line);padding-top:12px">Guía del taller HDFS + MapReduce · Hadoop 3.2.1 en Docker · salidas obtenidas el 12-nov-2026.</footer>
+</div>
+<button class="toggle" type="button" onclick="(function(){var r=document.documentElement;var d=r.getAttribute('data-theme')==='dark'||(!r.getAttribute('data-theme')&&matchMedia('(prefers-color-scheme: dark)').matches);r.setAttribute('data-theme',d?'light':'dark');})()">◐ Tema</button>
+</body>
+</html>

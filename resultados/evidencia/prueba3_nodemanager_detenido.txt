@@ -1,0 +1,83 @@
+### 06:15:54 inicia scripts/04_job_lento.sh (en segundo plano)
+### 06:16:30 contenedores por NodeManager antes del fallo
+nodemanager1:35947	        RUNNING	nodemanager1:8042	                           3
+nodemanager2:40999	        RUNNING	nodemanager2:8042	                           1
+### 06:16:35 docker compose stop nodemanager2
+ Container nodemanager2 Stopping 
+ Container nodemanager2 Stopped 
+[06:16:49] nodemanager2:40999	        RUNNING	nodemanager2:8042	                           1
+[06:17:02] nodemanager2:40999	        RUNNING	nodemanager2:8042	                           1
+[06:17:14] nodemanager2:40999	           LOST	nodemanager2:8042	                           1
+[06:17:41] nodemanager2:40999	           LOST	nodemanager2:8042	                           0
+[06:17:53] nodemanager2:40999	           LOST	nodemanager2:8042	                           0
+[06:18:06] nodemanager2:40999	           LOST	nodemanager2:8042	                           0
+[06:18:18] nodemanager2:40999	           LOST	nodemanager2:8042	                           0
+[06:18:31] nodemanager2:40999	           LOST	nodemanager2:8042	                           0
+[06:18:43] nodemanager2:40999	           LOST	nodemanager2:8042	                           0
+[06:18:55] nodemanager2:40999	           LOST	nodemanager2:8042	                           0
+[06:19:10] nodemanager2:40999	           LOST	nodemanager2:8042	                           0
+[06:19:25] nodemanager2:40999	           LOST	nodemanager2:8042	                           0
+### 06:20:17 job terminado
+2026-11-12 11:16:04,100 INFO impl.YarnClientImpl: Submitted application application_1794481638538_0004
+2026-11-12 11:16:14,505 INFO mapreduce.Job:  map 0% reduce 0%
+2026-11-12 11:16:33,731 INFO mapreduce.Job:  map 2% reduce 0%
+2026-11-12 11:16:35,751 INFO mapreduce.Job:  map 4% reduce 0%
+2026-11-12 11:16:36,760 INFO mapreduce.Job:  map 20% reduce 0%
+2026-11-12 11:16:38,779 INFO mapreduce.Job:  map 21% reduce 0%
+2026-11-12 11:16:44,828 INFO mapreduce.Job:  map 22% reduce 0%
+2026-11-12 11:16:47,853 INFO mapreduce.Job:  map 23% reduce 0%
+2026-11-12 11:16:53,905 INFO mapreduce.Job:  map 24% reduce 0%
+2026-11-12 11:16:56,928 INFO mapreduce.Job:  map 25% reduce 0%
+2026-11-12 11:16:59,954 INFO mapreduce.Job:  map 26% reduce 0%
+2026-11-12 11:17:04,989 INFO mapreduce.Job:  map 27% reduce 0%
+2026-11-12 11:17:09,023 INFO mapreduce.Job:  map 28% reduce 0%
+2026-11-12 11:17:15,073 INFO mapreduce.Job:  map 29% reduce 0%
+2026-11-12 11:17:17,091 INFO mapreduce.Job:  map 30% reduce 0%
+2026-11-12 11:17:23,137 INFO mapreduce.Job:  map 31% reduce 0%
+2026-11-12 11:17:27,167 INFO mapreduce.Job:  map 32% reduce 0%
+2026-11-12 11:17:33,217 INFO mapreduce.Job:  map 17% reduce 0%
+2026-11-12 11:17:35,225 INFO mapreduce.Job:  map 18% reduce 0%
+2026-11-12 11:17:39,265 INFO mapreduce.Job:  map 19% reduce 0%
+2026-11-12 11:17:45,319 INFO mapreduce.Job:  map 20% reduce 0%
+2026-11-12 11:17:47,333 INFO mapreduce.Job:  map 21% reduce 0%
+2026-11-12 11:17:51,468 INFO mapreduce.Job:  map 22% reduce 0%
+2026-11-12 11:17:53,483 INFO mapreduce.Job:  map 24% reduce 0%
+2026-11-12 11:17:59,535 INFO mapreduce.Job:  map 25% reduce 0%
+2026-11-12 11:18:03,551 INFO mapreduce.Job:  map 26% reduce 0%
+2026-11-12 11:18:09,598 INFO mapreduce.Job:  map 27% reduce 0%
+2026-11-12 11:18:11,614 INFO mapreduce.Job:  map 28% reduce 0%
+2026-11-12 11:18:17,656 INFO mapreduce.Job:  map 29% reduce 0%
+2026-11-12 11:18:21,686 INFO mapreduce.Job:  map 30% reduce 0%
+2026-11-12 11:18:23,702 INFO mapreduce.Job:  map 31% reduce 0%
+2026-11-12 11:18:29,741 INFO mapreduce.Job:  map 32% reduce 0%
+2026-11-12 11:18:33,764 INFO mapreduce.Job:  map 33% reduce 0%
+2026-11-12 11:18:39,816 INFO mapreduce.Job:  map 34% reduce 0%
+2026-11-12 11:18:41,833 INFO mapreduce.Job:  map 35% reduce 0%
+2026-11-12 11:18:47,881 INFO mapreduce.Job:  map 36% reduce 0%
+2026-11-12 11:18:51,909 INFO mapreduce.Job:  map 37% reduce 0%
+2026-11-12 11:18:53,924 INFO mapreduce.Job:  map 38% reduce 0%
+2026-11-12 11:18:59,985 INFO mapreduce.Job:  map 39% reduce 0%
+2026-11-12 11:19:04,005 INFO mapreduce.Job:  map 40% reduce 0%
+2026-11-12 11:19:10,050 INFO mapreduce.Job:  map 41% reduce 0%
+2026-11-12 11:19:12,070 INFO mapreduce.Job:  map 42% reduce 0%
+2026-11-12 11:19:18,141 INFO mapreduce.Job:  map 43% reduce 0%
+2026-11-12 11:19:21,173 INFO mapreduce.Job:  map 44% reduce 0%
+2026-11-12 11:19:26,221 INFO mapreduce.Job:  map 56% reduce 0%
+2026-11-12 11:19:28,308 INFO mapreduce.Job:  map 67% reduce 0%
+2026-11-12 11:19:47,650 INFO mapreduce.Job:  map 82% reduce 0%
+2026-11-12 11:19:48,665 INFO mapreduce.Job:  map 82% reduce 22%
+2026-11-12 11:19:53,742 INFO mapreduce.Job:  map 88% reduce 22%
+2026-11-12 11:19:59,814 INFO mapreduce.Job:  map 89% reduce 22%
+2026-11-12 11:20:01,855 INFO mapreduce.Job:  map 100% reduce 22%
+2026-11-12 11:20:05,884 INFO mapreduce.Job:  map 100% reduce 100%
+2026-11-12 11:20:07,930 INFO mapreduce.Job: Job job_1794481638538_0004 completed successfully
+		Killed map tasks=2
+		Launched map tasks=4
+		Launched reduce tasks=1
+		Rack-local map tasks=3
+alimentos	42480.41	77749	3302809300.00
+deportes	320257.54	23315	7466804600.00
+electronica	1403720.81	31503	44221416800.00
+hogar	209572.94	46569	9759602200.00
+libros	68018.20	15498	1054146100.00
+ropa	140300.93	65366	9170910500.00

@@ -1,0 +1,21 @@
+
+==================== Validando promedio ====================
+Found 2 items
+-rw-r--r--   2 root supergroup          0 2026-11-12 11:10 /taller/output/promedio/_SUCCESS
+-rw-r--r--   2 root supergroup        229 2026-11-12 11:10 /taller/output/promedio/part-00000
+  claves comparadas: 6
+  RESULTADO: OK, la salida de Hadoop coincide 100 % con el cálculo esperado
+
+==================== Validando wordcount ====================
+Found 2 items
+-rw-r--r--   2 root supergroup          0 2026-11-12 11:11 /taller/output/wordcount/_SUCCESS
+-rw-r--r--   2 root supergroup        850 2026-11-12 11:11 /taller/output/wordcount/part-00000
+  claves comparadas: 67
+  RESULTADO: OK, la salida de Hadoop coincide 100 % con el cálculo esperado
+
+==================== Validando logs ====================
+Found 2 items
+-rw-r--r--   2 root supergroup          0 2026-11-12 11:11 /taller/output/logs/_SUCCESS
+-rw-r--r--   2 root supergroup        421 2026-11-12 11:11 /taller/output/logs/part-00000
+  claves comparadas: 24
+  RESULTADO: OK, la salida de Hadoop coincide 100 % con el cálculo esperado

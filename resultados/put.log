@@ -1,0 +1,38 @@
+2026-11-12 11:15:26,760 INFO sasl.SaslDataTransferClient: SASL encryption trust check: localHostTrusted = false, remoteHostTrusted = false
+2026-11-12 11:15:28,070 INFO sasl.SaslDataTransferClient: SASL encryption trust check: localHostTrusted = false, remoteHostTrusted = false
+2026-11-12 11:15:28,651 INFO sasl.SaslDataTransferClient: SASL encryption trust check: localHostTrusted = false, remoteHostTrusted = false
+2026-11-12 11:15:28,910 WARN hdfs.DataStreamer: Exception for BP-405063338-172.20.0.6-1794481597896:blk_1073741879_1055
+java.io.IOException: Connection reset by peer
+	at sun.nio.ch.FileDispatcherImpl.read0(Native Method)
+	at sun.nio.ch.SocketDispatcher.read(SocketDispatcher.java:39)
+	at sun.nio.ch.IOUtil.readIntoNativeBuffer(IOUtil.java:223)
+	at sun.nio.ch.IOUtil.read(IOUtil.java:197)
+	at sun.nio.ch.SocketChannelImpl.read(SocketChannelImpl.java:380)
+	at org.apache.hadoop.net.SocketInputStream$Reader.performIO(SocketInputStream.java:57)
+	at org.apache.hadoop.net.SocketIOWithTimeout.doIO(SocketIOWithTimeout.java:142)
+	at org.apache.hadoop.net.SocketInputStream.read(SocketInputStream.java:161)
+	at org.apache.hadoop.net.SocketInputStream.read(SocketInputStream.java:131)
+	at org.apache.hadoop.net.SocketInputStream.read(SocketInputStream.java:118)
+	at java.io.FilterInputStream.read(FilterInputStream.java:83)
+	at java.io.FilterInputStream.read(FilterInputStream.java:83)
+	at org.apache.hadoop.hdfs.protocolPB.PBHelperClient.vintPrefixed(PBHelperClient.java:548)
+	at org.apache.hadoop.hdfs.protocol.datatransfer.PipelineAck.readFields(PipelineAck.java:213)
+	at org.apache.hadoop.hdfs.DataStreamer$ResponseProcessor.run(DataStreamer.java:1086)
+2026-11-12 11:15:28,914 WARN hdfs.DataStreamer: Error Recovery for BP-405063338-172.20.0.6-1794481597896:blk_1073741879_1055 in pipeline [DatanodeInfoWithStorage[172.20.0.4:9866,DS-738cb415-0208-4419-822d-7219bf2125c7,DISK], DatanodeInfoWithStorage[172.20.0.2:9866,DS-f26fc57f-1806-48a0-8981-d0ccb9b355a9,DISK]]: datanode 0(DatanodeInfoWithStorage[172.20.0.4:9866,DS-738cb415-0208-4419-822d-7219bf2125c7,DISK]) is bad.
+2026-11-12 11:15:29,059 INFO sasl.SaslDataTransferClient: SASL encryption trust check: localHostTrusted = false, remoteHostTrusted = false
+2026-11-12 11:15:29,323 INFO sasl.SaslDataTransferClient: SASL encryption trust check: localHostTrusted = false, remoteHostTrusted = false
+2026-11-12 11:15:30,339 INFO hdfs.DataStreamer: Exception in createBlockOutputStream blk_1073741880_1057
+java.io.IOException: Got error, status=ERROR, status message , ack with firstBadLink as 172.20.0.4:9866
+	at org.apache.hadoop.hdfs.protocol.datatransfer.DataTransferProtoUtil.checkBlockOpStatus(DataTransferProtoUtil.java:134)
+	at org.apache.hadoop.hdfs.protocol.datatransfer.DataTransferProtoUtil.checkBlockOpStatus(DataTransferProtoUtil.java:110)
+	at org.apache.hadoop.hdfs.DataStreamer.createBlockOutputStream(DataStreamer.java:1778)
+	at org.apache.hadoop.hdfs.DataStreamer.nextBlockOutputStream(DataStreamer.java:1679)
+	at org.apache.hadoop.hdfs.DataStreamer.run(DataStreamer.java:716)
+2026-11-12 11:15:30,339 WARN hdfs.DataStreamer: Abandoning BP-405063338-172.20.0.6-1794481597896:blk_1073741880_1057
+2026-11-12 11:15:30,369 WARN hdfs.DataStreamer: Excluding datanode DatanodeInfoWithStorage[172.20.0.4:9866,DS-738cb415-0208-4419-822d-7219bf2125c7,DISK]
+2026-11-12 11:15:30,386 INFO sasl.SaslDataTransferClient: SASL encryption trust check: localHostTrusted = false, remoteHostTrusted = false
+
+real	0m6.608s
+user	0m4.760s
+sys	0m1.036s
+EXIT_PUT=0
