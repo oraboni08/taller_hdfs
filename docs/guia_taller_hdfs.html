@@ -574,6 +574,9 @@ Dead datanodes (1):   Hostname: datanode2
 The filesystem under path '/taller/input' is HEALTHY
 ### leer un archivo con un DataNode caído
 260001                           <span class="c"># las 260 000 ventas + encabezado: el archivo está completo</span></pre>
+    <p>En la web de HDFS (<a href="http://localhost:9870">localhost:9870</a>) se ve lo mismo:</p>
+    <figure><img src="img/hdfs_dead_overview.png" alt="Overview de HDFS con un nodo muerto"><figcaption>Overview con datanode2 apagado: Live Nodes 1, Dead Nodes 1 y 48 bloques sub-replicados (todos los archivos de HDFS, incluidas las salidas y los logs de los jobs).</figcaption></figure>
+    <figure><img src="img/hdfs_dead_datanodes.png" alt="Pestaña Datanodes con datanode2 caído"><figcaption>Pestaña Datanodes: datanode1 en servicio (check verde) y datanode2 en rojo ("Down"), con la hora de su último contacto.</figcaption></figure>
     <p>Luego se vuelve a encender:</p>
 <pre><code>docker compose start datanode2
 docker compose exec client bash scripts/estado.sh</code></pre>
@@ -710,6 +713,7 @@ docker compose down -v    <span class="c"># apaga y BORRA los datos de HDFS</spa
     <tr><td>El job se queda en <code>ACCEPTED</code></td><td>No hay memoria libre en YARN o los NodeManagers no están registrados. Revisa <code>yarn node -list</code> y la memoria de Docker.</td></tr>
     <tr><td>Contenedores que se reinician solos (Exited 137)</td><td>Docker se quedó sin memoria. Cierra otros contenedores o sube la memoria de Docker.</td></tr>
     <tr><td><code>subprocess failed with code 1/2</code></td><td>Error en el script Python. Pruébalo con <code>mapper | sort | reducer</code> y lee el Traceback con <code>yarn logs</code>.</td></tr>
+    <tr><td><code>hdfs fsck /</code> muestra unos pocos bloques <i>under-replicated</i> que nunca bajan a 0</td><td>Son archivos de <code>/tmp/hadoop-yarn/staging/…</code> (el <code>job.jar</code>, los .py y el <code>job.split</code> de un job interrumpido). MapReduce los sube con replicación 10 para que muchos nodos los descarguen rápido, y con 2 DataNodes nunca se alcanza. No es un error: revisa <code>hdfs fsck /taller</code>, que es donde están los datos. Si quieres borrarlos: <code>hdfs dfs -rm -r /tmp/hadoop-yarn/staging/root/.staging/job_*</code>.</td></tr>
     <tr><td>Scripts con <code>\r: command not found</code></td><td>Finales de línea de Windows. El repo tiene <code>.gitattributes</code> para forzar LF; si editas con Notepad, guarda en formato LF.</td></tr>
   </table>
 </section>
