@@ -63,6 +63,76 @@ yarn logs -applicationId <application_id> | less
 
 El detalle de cada prueba, con las salidas obtenidas, está en la guía HTML.
 
+## Resultados obtenidos (12-nov-2026)
+
+Toda la evidencia en texto está en [`resultados/`](resultados/) y las capturas en [`docs/img/`](docs/img/).
+
+### Clúster
+
+| Verificación | Resultado |
+|---|---|
+| Contenedores | 8 de 8 en `Up (healthy)` |
+| HDFS | 2 DataNodes vivos, 10 bloques de entrada con 2 réplicas cada uno, `HEALTHY` ([`01_carga_hdfs.txt`](resultados/evidencia/01_carga_hdfs.txt)) |
+| YARN | 2 NodeManagers `RUNNING` ([`estado_inicial.txt`](resultados/evidencia/estado_inicial.txt)) |
+
+![HDFS Overview](docs/img/hdfs_overview.png)
+![YARN Nodes](docs/img/yarn_nodes.png)
+
+### Jobs MapReduce
+
+| Aplicación YARN | Job | Estado final | Validación |
+|---|---|---|---|
+| `application_…_0001` | taller-promedio | SUCCEEDED | 6 de 6 claves coinciden con lo esperado |
+| `application_…_0002` | taller-wordcount | SUCCEEDED | 67 de 67 claves coinciden |
+| `application_…_0003` | taller-logs | SUCCEEDED | 24 de 24 claves coinciden |
+| `application_…_0004` | taller-promedio-lento (prueba 3) | SUCCEEDED | mismo resultado que el job 1 |
+| `application_…_0005` | taller-con-error (prueba 4) | FAILED (a propósito) | — |
+
+**Job 1: promedio de ventas por categoría** ([`promedio.tsv`](resultados/promedio.tsv))
+
+| Categoría | Promedio | N.º de ventas | Total |
+|---|---:|---:|---:|
+| alimentos | 42 480,41 | 77 749 | 3 302 809 300 |
+| deportes | 320 257,54 | 23 315 | 7 466 804 600 |
+| electronica | 1 403 720,81 | 31 503 | 44 221 416 800 |
+| hogar | 209 572,94 | 46 569 | 9 759 602 200 |
+| libros | 68 018,20 | 15 498 | 1 054 146 100 |
+| ropa | 140 300,93 | 65 366 | 9 170 910 500 |
+
+**Job 2: WordCount, top 8 palabras** ([`wordcount.tsv`](resultados/wordcount.tsv)): el 180 176 · la 119 824 · y 98 171 · lo 56 048 · fue 51 843 · llegó 51 576 · es 37 715 · muy 37 658.
+
+**Job 3: horas pico y errores** ([`logs.tsv`](resultados/logs.tsv)). La hora pico es las 20:00 (29 290 peticiones). Las horas 12, 13, 19 y 20 tienen alrededor del 9 % de errores; el resto, alrededor del 3 %.
+
+| Hora | Peticiones | Errores | % error |
+|---|---:|---:|---:|
+| 12 | 23 256 | 2 118 | 9,11 |
+| 13 | 21 996 | 1 944 | 8,84 |
+| 19 | 26 069 | 2 371 | 9,10 |
+| 20 | 29 290 | 2 657 | 9,07 |
+| 21 | 20 571 | 609 | 2,96 |
+
+![Aplicaciones en YARN](docs/img/yarn_apps.png)
+![Job en estado RUNNING](docs/img/yarn_running.png)
+![Historial: SUCCEEDED y FAILED](docs/img/history.png)
+
+### Pruebas de tolerancia a fallos
+
+| # | Prueba | Resultado observado | Evidencia |
+|---|---|---|---|
+| 1 | Apagar `datanode2` | El NameNode lo marcó **Dead** a los ~70 s. Los 10 bloques de entrada quedaron con 1 réplica (*under-replicated*) y **0 bloques perdidos**; `ventas.csv` se leyó completo (260 001 líneas). Al encenderlo de nuevo, en 25 s volvió a 2 réplicas y `HEALTHY`. | [`prueba1_datanode_apagado.txt`](resultados/evidencia/prueba1_datanode_apagado.txt) |
+| 2 | `restart datanode1` durante un `hdfs dfs -put` de 14 MB | El cliente registró `Connection reset by peer` → `Excluding datanode 172.20.0.4` y siguió con el otro nodo. El `put` terminó con código 0 en 6,6 s y el MD5 es idéntico (`77b3e925…`). | [`prueba2_reinicio_durante_put.txt`](resultados/evidencia/prueba2_reinicio_durante_put.txt) |
+| 3 | `stop nodemanager2` con el job lento corriendo | `nodemanager2` pasó a **LOST** ~40 s después. El ApplicationMaster mató `m_000002_0` ("running on unusable node") y lo relanzó como `m_000002_1` en `nodemanager1`. El progreso bajó de 32 % a 17 % y el job terminó **SUCCEEDED** con el resultado correcto. | [`prueba3_nodemanager_detenido.txt`](resultados/evidencia/prueba3_nodemanager_detenido.txt), [`prueba3_logs_applicationmaster.txt`](resultados/evidencia/prueba3_logs_applicationmaster.txt) |
+| 4 | Mapper que lanza una excepción | Cada tarea map se intentó 4 veces (`_0` a `_3`): 11 tareas lanzadas y 10 fallidas. El job quedó **FAILED** y `yarn logs` muestra el `RuntimeError` de Python. | [`prueba4_mapper_con_error.txt`](resultados/evidencia/prueba4_mapper_con_error.txt), [`prueba4_traceback.txt`](resultados/evidencia/prueba4_traceback.txt) |
+
+![HDFS con un DataNode muerto](docs/img/hdfs_dead_overview.png)
+![Datanodes: datanode2 caído](docs/img/hdfs_dead_datanodes.png)
+
+**Conclusiones**
+- HDFS no perdió datos al caer un nodo gracias a la replicación.
+- La escritura sobrevive a un nodo que se reinicia gracias a la recuperación del *pipeline*.
+- YARN repite en otro nodo las tareas de una máquina perdida.
+- Los reintentos no salvan un job cuando el error está en el código.
+
 ## Apagar
 
 ```bash

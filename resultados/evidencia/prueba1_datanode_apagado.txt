@@ -1,0 +1,31 @@
+### 06:12:51 docker compose stop datanode2
+ Container datanode2 Stopping 
+ Container datanode2 Stopped 
+### 06:12:55 estado inmediato
+Live datanodes (2):
+### hdfs dfsadmin -report
+	Under replicated blocks: 28
+	Missing blocks: 0
+Live datanodes (1):
+Hostname: datanode1
+Dead datanodes (1):
+Hostname: datanode2
+### hdfs fsck /taller/input
+ Under-replicated blocks:	10 (100.0 %)
+ Average block replication:	1.0
+ Missing blocks:		0
+The filesystem under path '/taller/input' is HEALTHY
+### leer un archivo con un DataNode caido
+260001
+alimentos	42480.41	77749	3302809300.00
+deportes	320257.54	23315	7466804600.00
+electronica	1403720.81	31503	44221416800.00
+### 06:14:32 docker compose start datanode2
+ Container datanode2 Starting 
+ Container datanode2 Started 
+### 06:14:57 estado tras reintegrar
+	Under replicated blocks: 0
+Live datanodes (2):
+ Under-replicated blocks:	0 (0.0 %)
+ Average block replication:	2.0
+The filesystem under path '/taller/input' is HEALTHY

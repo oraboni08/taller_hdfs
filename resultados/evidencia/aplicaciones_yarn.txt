@@ -1,0 +1,5 @@
+application_1794481638538_0001   taller-promedio        FINISHED   SUCCEEDED
+application_1794481638538_0002   taller-wordcount       FINISHED   SUCCEEDED
+application_1794481638538_0003   taller-logs            FINISHED   SUCCEEDED
+application_1794481638538_0004   taller-promedio-lento  FINISHED   SUCCEEDED
+application_1794481638538_0005   taller-con-error       FINISHED   FAILED

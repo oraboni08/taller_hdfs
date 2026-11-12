@@ -53,6 +53,7 @@ pre.out{background:var(--panel);color:var(--ink);border:1px dashed var(--line)}
 pre.mini{font-size:12px;padding:8px;margin:6px 0 0}
 .lbl{display:inline-block;font-size:.75rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin-top:6px}
 table{width:100%;border-collapse:collapse;margin:10px 0 16px;font-size:.94rem;background:var(--panel);border-radius:10px;overflow:hidden;display:block;overflow-x:auto}
+table > tbody{display:table;width:100%}
 th,td{border-bottom:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
 th{background:var(--accent-soft)}
 .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:12px 0}
@@ -99,6 +100,7 @@ svg.diagram{width:100%;height:auto;background:var(--panel);border:1px solid var(
   <b>Contenido</b>
   <ol>
     <li><a href="#resumen">Qué pide el taller y cómo se cumple</a></li>
+    <li><a href="#resultados">Resultados obtenidos</a></li>
     <li><a href="#conceptos">Parte A · Qué es todo esto y para qué sirve</a></li>
     <li><a href="#paso0">Parte B · Paso 0: requisitos</a></li>
     <li><a href="#paso1">Paso 1: estructura del proyecto</a></li>
@@ -127,6 +129,85 @@ svg.diagram{width:100%;height:auto;background:var(--panel);border:1px solid var(
     <tr><td><b>3. Verificar ejecución</b></td><td>Estados en YARN UI y <code>yarn application -list</code>, logs con <code>yarn logs</code>, salidas con <code>hdfs dfs -ls / -cat</code>, logs de contenedores con <code>docker compose logs</code>. Se vieron RUNNING, SUCCEEDED y FAILED.</td><td>Paso 9.</td></tr>
     <tr><td><b>4. Tolerancia a fallos</b></td><td>4 pruebas: apagar un DataNode, reiniciar un DataNode durante un <code>put</code>, detener un NodeManager con un job corriendo, y una tarea map que falla.</td><td>Paso 10, con las salidas reales.</td></tr>
   </table>
+</section>
+
+<section id="resultados">
+  <h2>Resultados obtenidos</h2>
+  <p>Corrida del 12-nov-2026. Toda la evidencia en texto está en la carpeta <code>resultados/</code> del repo y las capturas en <code>docs/img/</code>. El paso a paso de cada resultado está en la Parte B.</p>
+
+  <h3>Clúster</h3>
+  <table>
+    <tr><th>Verificación</th><th>Resultado</th></tr>
+    <tr><td>Contenedores</td><td>8 de 8 en <code>Up (healthy)</code></td></tr>
+    <tr><td>HDFS</td><td>2 DataNodes vivos; 3 datasets = 10 bloques, cada uno con 2 réplicas; <b>HEALTHY</b></td></tr>
+    <tr><td>YARN</td><td>2 NodeManagers <b>RUNNING</b>, 3 GB y 4 vCores en total</td></tr>
+  </table>
+
+  <h3>Jobs MapReduce</h3>
+  <table>
+    <tr><th>Aplicación YARN</th><th>Job</th><th>Estado final</th><th>Validación manual</th></tr>
+    <tr><td><code>…_0001</code></td><td>taller-promedio</td><td style="color:var(--ok)"><b>SUCCEEDED</b></td><td>6 de 6 claves = esperado</td></tr>
+    <tr><td><code>…_0002</code></td><td>taller-wordcount</td><td style="color:var(--ok)"><b>SUCCEEDED</b></td><td>67 de 67 claves = esperado</td></tr>
+    <tr><td><code>…_0003</code></td><td>taller-logs</td><td style="color:var(--ok)"><b>SUCCEEDED</b></td><td>24 de 24 claves = esperado</td></tr>
+    <tr><td><code>…_0004</code></td><td>taller-promedio-lento (prueba 3)</td><td style="color:var(--ok)"><b>SUCCEEDED</b></td><td>Mismo resultado que el job 1, pese a perder un nodo</td></tr>
+    <tr><td><code>…_0005</code></td><td>taller-con-error (prueba 4)</td><td style="color:var(--bad)"><b>FAILED</b></td><td>Esperado: el mapper falla a propósito</td></tr>
+  </table>
+
+  <div class="grid3">
+    <div class="card"><span class="tag t-mr">Job 1</span><br><b>Promedio por categoría</b>
+      <table style="margin:6px 0 0;font-size:.85rem">
+        <tr><th>Categoría</th><th>Promedio</th><th>Ventas</th></tr>
+        <tr><td>electronica</td><td>1 403 720,81</td><td>31 503</td></tr>
+        <tr><td>deportes</td><td>320 257,54</td><td>23 315</td></tr>
+        <tr><td>hogar</td><td>209 572,94</td><td>46 569</td></tr>
+        <tr><td>ropa</td><td>140 300,93</td><td>65 366</td></tr>
+        <tr><td>libros</td><td>68 018,20</td><td>15 498</td></tr>
+        <tr><td>alimentos</td><td>42 480,41</td><td>77 749</td></tr>
+      </table>
+      <p class="small">Electrónica tiene el ticket más alto; alimentos es la categoría con más ventas.</p></div>
+    <div class="card"><span class="tag t-mr">Job 2</span><br><b>WordCount (top 8)</b>
+      <table style="margin:6px 0 0;font-size:.85rem">
+        <tr><th>Palabra</th><th>Veces</th></tr>
+        <tr><td>el</td><td>180 176</td></tr><tr><td>la</td><td>119 824</td></tr>
+        <tr><td>y</td><td>98 171</td></tr><tr><td>lo</td><td>56 048</td></tr>
+        <tr><td>fue</td><td>51 843</td></tr><tr><td>llegó</td><td>51 576</td></tr>
+        <tr><td>es</td><td>37 715</td></tr><tr><td>muy</td><td>37 658</td></tr>
+      </table>
+      <p class="small">67 palabras distintas en 150 000 reseñas.</p></div>
+    <div class="card"><span class="tag t-mr">Job 3</span><br><b>Horas pico y errores</b>
+      <table style="margin:6px 0 0;font-size:.85rem">
+        <tr><th>Hora</th><th>Peticiones</th><th>% error</th></tr>
+        <tr><td><b>20</b></td><td><b>29 290</b></td><td>9,07</td></tr>
+        <tr><td>19</td><td>26 069</td><td>9,10</td></tr>
+        <tr><td>12</td><td>23 256</td><td>9,11</td></tr>
+        <tr><td>13</td><td>21 996</td><td>8,84</td></tr>
+        <tr><td>21</td><td>20 571</td><td>2,96</td></tr>
+        <tr><td>03</td><td>1 525</td><td>3,28</td></tr>
+      </table>
+      <p class="small">La hora pico es las 20:00. En las horas de más carga los errores suben del ~3 % al ~9 %.</p></div>
+  </div>
+
+  <h3>Pruebas de tolerancia a fallos</h3>
+  <table>
+    <tr><th>#</th><th>Fallo provocado</th><th>Resultado observado</th><th>Veredicto</th></tr>
+    <tr><td>1</td><td><code>docker compose stop datanode2</code></td><td>Marcado <b>Dead</b> a los ~70 s; 10 de 10 bloques sub-replicados, <b>0 perdidos</b>; archivo leído completo (260 001 líneas). Al encenderlo, en 25 s volvió a 2 réplicas y HEALTHY.</td><td style="color:var(--ok)"><b>Sin pérdida de datos</b></td></tr>
+    <tr><td>2</td><td><code>restart datanode1</code> durante un <code>put</code> de 14 MB</td><td><code>Connection reset by peer</code> → <code>Excluding datanode</code>; <code>put</code> con código 0 en 6,6 s; MD5 local = MD5 en HDFS.</td><td style="color:var(--ok)"><b>Escritura completa</b></td></tr>
+    <tr><td>3</td><td><code>stop nodemanager2</code> con un job corriendo</td><td><b>LOST</b> a los ~40 s; intento <code>m_000002_0</code> matado y relanzado como <code>m_000002_1</code> en nodemanager1; progreso 32 % → 17 %; job SUCCEEDED.</td><td style="color:var(--ok)"><b>Job recuperado</b></td></tr>
+    <tr><td>4</td><td>Mapper que lanza una excepción</td><td>4 intentos por tarea: 11 tareas map lanzadas, 10 fallidas; job FAILED; <code>RuntimeError</code> visible con <code>yarn logs</code>.</td><td style="color:var(--bad)"><b>Falla esperada</b> (bug en el código)</td></tr>
+  </table>
+  <div class="grid3" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr))">
+    <figure style="margin:0"><img style="height:220px;width:100%;object-fit:cover;object-position:top" src="img/hdfs_dead_overview.png" alt="HDFS con un nodo muerto"><figcaption>Prueba 1: Live 1 / Dead 1.</figcaption></figure>
+    <figure style="margin:0"><img style="height:220px;width:100%;object-fit:cover;object-position:top" src="img/yarn_running.png" alt="YARN con un nodo perdido"><figcaption>Prueba 3: job RUNNING con "Lost Nodes 1".</figcaption></figure>
+    <figure style="margin:0"><img style="height:220px;width:100%;object-fit:cover;object-position:top" src="img/history.png" alt="Historial de aplicaciones"><figcaption>Prueba 4: taller-con-error FAILED.</figcaption></figure>
+  </div>
+  <div class="okbox"><b>Conclusiones:</b>
+    <ul>
+      <li>La <b>replicación</b> evitó la pérdida de datos al caer un DataNode.</li>
+      <li>El <b>pipeline de escritura</b> excluye al nodo que falla y sigue con los demás.</li>
+      <li>YARN <b>reprograma en otro nodo</b> las tareas de una máquina perdida.</li>
+      <li>Los reintentos no sirven cuando el error está en el código: el job termina FAILED y la causa queda en los logs.</li>
+    </ul>
+  </div>
 </section>
 <section id="conceptos">
   <h2>Parte A · Qué es todo esto y para qué sirve</h2>

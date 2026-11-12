@@ -1,0 +1,29 @@
+2026-11-12 11:21:17,227 INFO impl.YarnClientImpl: Submitted application application_1794481638538_0005
+2026-11-12 11:21:29,697 INFO mapreduce.Job:  map 0% reduce 0%
+2026-11-12 11:21:36,903 INFO mapreduce.Job: Task Id : attempt_1794481638538_0005_m_000000_0, Status : FAILED
+Error: java.lang.RuntimeException: PipeMapRed.waitOutputThreads(): subprocess failed with code 1
+2026-11-12 11:21:37,980 INFO mapreduce.Job: Task Id : attempt_1794481638538_0005_m_000001_0, Status : FAILED
+Error: java.lang.RuntimeException: PipeMapRed.waitOutputThreads(): subprocess failed with code 1
+2026-11-12 11:21:41,039 INFO mapreduce.Job: Task Id : attempt_1794481638538_0005_m_000002_0, Status : FAILED
+Error: java.lang.RuntimeException: PipeMapRed.waitOutputThreads(): subprocess failed with code 1
+2026-11-12 11:21:43,084 INFO mapreduce.Job: Task Id : attempt_1794481638538_0005_m_000000_1, Status : FAILED
+Error: java.lang.RuntimeException: PipeMapRed.waitOutputThreads(): subprocess failed with code 1
+2026-11-12 11:21:44,101 INFO mapreduce.Job: Task Id : attempt_1794481638538_0005_m_000001_1, Status : FAILED
+Error: java.lang.RuntimeException: PipeMapRed.waitOutputThreads(): subprocess failed with code 1
+2026-11-12 11:21:46,134 INFO mapreduce.Job: Task Id : attempt_1794481638538_0005_m_000002_1, Status : FAILED
+Error: java.lang.RuntimeException: PipeMapRed.waitOutputThreads(): subprocess failed with code 1
+2026-11-12 11:21:47,148 INFO mapreduce.Job: Task Id : attempt_1794481638538_0005_m_000000_2, Status : FAILED
+Error: java.lang.RuntimeException: PipeMapRed.waitOutputThreads(): subprocess failed with code 1
+2026-11-12 11:21:48,169 INFO mapreduce.Job: Task Id : attempt_1794481638538_0005_m_000001_2, Status : FAILED
+Error: java.lang.RuntimeException: PipeMapRed.waitOutputThreads(): subprocess failed with code 1
+2026-11-12 11:21:51,207 INFO mapreduce.Job: Task Id : attempt_1794481638538_0005_m_000002_2, Status : FAILED
+Error: java.lang.RuntimeException: PipeMapRed.waitOutputThreads(): subprocess failed with code 1
+2026-11-12 11:21:53,229 INFO mapreduce.Job:  map 67% reduce 100%
+2026-11-12 11:21:54,237 INFO mapreduce.Job:  map 100% reduce 100%
+2026-11-12 11:21:54,252 INFO mapreduce.Job: Job job_1794481638538_0005 failed with state FAILED due to: Task failed task_1794481638538_0005_m_000001
+Job failed as tasks failed. failedMaps:1 failedReduces:0 killedMaps:0 killedReduces: 0
+		Failed map tasks=10
+		Launched map tasks=11
+2026-11-12 11:21:54,491 ERROR streaming.StreamJob: Job not successful!
+Streaming Command Failed!
+Código de salida del job: 1 (distinto de 0 = falló)

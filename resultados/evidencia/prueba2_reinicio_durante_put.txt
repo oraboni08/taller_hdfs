@@ -1,0 +1,18 @@
+### 06:15:19 inicia: hdfs dfs -put logs_servidor.log /taller/prueba/ (en segundo plano)
+### 06:15:25 docker compose restart datanode1 (durante la escritura)
+ Container datanode1 Restarting 
+ Container datanode1 Started 
+### 06:15:31 termino el put. Salida:
+2026-11-12 11:15:28,910 WARN hdfs.DataStreamer: Exception for BP-405063338-172.20.0.6-1794481597896:blk_1073741879_1055
+java.io.IOException: Connection reset by peer
+2026-11-12 11:15:28,914 WARN hdfs.DataStreamer: Error Recovery for BP-405063338-172.20.0.6-1794481597896:blk_1073741879_1055 in pipeline [DatanodeInfoWithStorage[172.20.0.4:9866,DS-738cb415-0208-4419-822d-7219bf2125c7,DISK], Datan
+2026-11-12 11:15:30,339 INFO hdfs.DataStreamer: Exception in createBlockOutputStream blk_1073741880_1057
+java.io.IOException: Got error, status=ERROR, status message , ack with firstBadLink as 172.20.0.4:9866
+2026-11-12 11:15:30,339 WARN hdfs.DataStreamer: Abandoning BP-405063338-172.20.0.6-1794481597896:blk_1073741880_1057
+2026-11-12 11:15:30,369 WARN hdfs.DataStreamer: Excluding datanode DatanodeInfoWithStorage[172.20.0.4:9866,DS-738cb415-0208-4419-822d-7219bf2125c7,DISK]
+real	0m6.608s
+EXIT_PUT=0
+### verificacion de integridad
+md5 local : 77b3e925655d8467946f4c5ba3564a02
+md5 HDFS  : 77b3e925655d8467946f4c5ba3564a02
+-rw-r--r--   2 root supergroup   14322599 2026-11-12 11:15 /taller/prueba/copia.log

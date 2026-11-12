@@ -1,0 +1,33 @@
+Container: container_1794481638538_0001_01_000001 on nodemanager1_35947
+LogAggregationType: AGGREGATED
+LogType:directory.info
+Container: container_1794481638538_0001_01_000001 on nodemanager1_35947
+LogAggregationType: AGGREGATED
+LogType:launch_container.sh
+Container: container_1794481638538_0001_01_000001 on nodemanager1_35947
+LogAggregationType: AGGREGATED
+LogType:prelaunch.out
+Container: container_1794481638538_0001_01_000001 on nodemanager1_35947
+LogAggregationType: AGGREGATED
+LogType:stderr
+Container: container_1794481638538_0001_01_000001 on nodemanager1_35947
+LogAggregationType: AGGREGATED
+LogType:syslog
+2026-11-12 11:09:51,387 INFO [RMCommunicator Allocator] org.apache.hadoop.mapreduce.v2.app.rm.RMContainerAllocator: Reduce slow start threshold not met. completedMapsForReduceSlowstart 1
+2026-11-12 11:09:52,419 INFO [RMCommunicator Allocator] org.apache.hadoop.mapreduce.v2.app.rm.RMContainerAllocator: Reduce slow start threshold not met. completedMapsForReduceSlowstart 1
+2026-11-12 11:09:53,434 INFO [RMCommunicator Allocator] org.apache.hadoop.mapreduce.v2.app.rm.RMContainerAllocator: Reduce slow start threshold not met. completedMapsForReduceSlowstart 1
+2026-11-12 11:09:54,448 INFO [RMCommunicator Allocator] org.apache.hadoop.mapreduce.v2.app.rm.RMContainerAllocator: Reduce slow start threshold not met. completedMapsForReduceSlowstart 1
+2026-11-12 11:09:55,466 INFO [RMCommunicator Allocator] org.apache.hadoop.mapreduce.v2.app.rm.RMContainerAllocator: Reduce slow start threshold not met. completedMapsForReduceSlowstart 1
+
+2026-11-12 11:09:44,349 INFO [main] org.apache.hadoop.yarn.event.AsyncDispatcher: Registering class org.apache.hadoop.mapreduce.v2.app.speculate.Speculator$EventType for class org.apache.hadoop.mapreduce.v2.app.MRAppMaster$SpeculatorEventDispatcher
+2026-11-12 11:09:49,962 INFO [AsyncDispatcher event handler] org.apache.hadoop.mapreduce.v2.app.speculate.DefaultSpeculator: JOB_CREATE job_1794481638538_0001
+2026-11-12 11:09:54,936 INFO [AsyncDispatcher event handler] org.apache.hadoop.mapreduce.v2.app.speculate.DefaultSpeculator: ATTEMPT_START task_1794481638538_0001_m_000001
+2026-11-12 11:09:54,937 INFO [AsyncDispatcher event handler] org.apache.hadoop.mapreduce.v2.app.speculate.DefaultSpeculator: ATTEMPT_START task_1794481638538_0001_m_000002
+2026-11-12 11:09:54,937 INFO [AsyncDispatcher event handler] org.apache.hadoop.mapreduce.v2.app.speculate.DefaultSpeculator: ATTEMPT_START task_1794481638538_0001_m_000000
+2026-11-12 11:10:11,437 INFO [AsyncDispatcher event handler] org.apache.hadoop.mapreduce.v2.app.job.impl.TaskImpl: Task succeeded with attempt attempt_1794481638538_0001_m_000002_0
+2026-11-12 11:10:11,440 INFO [AsyncDispatcher event handler] org.apache.hadoop.mapreduce.v2.app.job.impl.TaskImpl: task_1794481638538_0001_m_000002 Task Transitioned from RUNNING to SUCCEEDED
+2026-11-12 11:10:11,455 INFO [AsyncDispatcher event handler] org.apache.hadoop.mapreduce.v2.app.job.impl.JobImpl: Num completed Tasks: 1
+2026-11-12 11:10:12,032 INFO [DefaultSpeculator background processing] org.apache.hadoop.mapreduce.v2.app.speculate.DefaultSpeculator: DefaultSpeculator.addSpeculativeAttempt -- we are speculating task_1794481638538_0001_m_000001
+2026-11-12 11:10:12,034 INFO [DefaultSpeculator background processing] org.apache.hadoop.mapreduce.v2.app.speculate.DefaultSpeculator: We launched 1 speculations.  Sleeping 15000 milliseconds.
+2026-11-12 11:10:12,338 INFO [AsyncDispatcher event handler] org.apache.hadoop.mapreduce.v2.app.job.impl.TaskImpl: Task succeeded with attempt attempt_1794481638538_0001_m_000000_0
+2026-11-12 11:10:12,338 INFO [AsyncDispatcher event handler] org.apache.hadoop.mapreduce.v2.app.job.impl.TaskImpl: task_1794481638538_0001_m_000000 Task Transitioned from RUNNING to SUCCEEDED

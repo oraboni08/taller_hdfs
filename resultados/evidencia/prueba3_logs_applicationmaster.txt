@@ -1,0 +1,9 @@
+2026-11-12 11:16:15,753 RMContainerAllocator: Assigned container container_1794481638538_0004_01_000002 to attempt_1794481638538_0004_m_000000_0
+2026-11-12 11:16:16,776 RMContainerAllocator: Assigned container container_1794481638538_0004_01_000003 to attempt_1794481638538_0004_m_000001_0
+2026-11-12 11:16:16,779 RMContainerAllocator: Assigned container container_1794481638538_0004_01_000004 to attempt_1794481638538_0004_m_000002_0
+2026-11-12 11:17:31,308 RMContainerAllocator: Killing taskAttempt:attempt_1794481638538_0004_m_000002_0 because it is running on unusable node:nodemanager2:40999
+2026-11-12 11:17:31,312 TaskAttemptImpl: Diagnostics report from attempt_1794481638538_0004_m_000002_0: Container released on a *lost* node
+2026-11-12 11:17:47,383 TaskAttemptImpl: attempt_1794481638538_0004_m_000002_0 TaskAttempt Transitioned from KILL_TASK_CLEANUP to KILLED
+2026-11-12 11:19:25,944 RMContainerAllocator: Assigned container container_1794481638538_0004_01_000006 to attempt_1794481638538_0004_m_000002_1
+2026-11-12 11:19:27,996 RMContainerAllocator: Assigned container container_1794481638538_0004_01_000007 to attempt_1794481638538_0004_r_000000_0
+2026-11-12 11:20:00,547 TaskAttemptImpl: attempt_1794481638538_0004_m_000002_2 TaskAttempt Transitioned from UNASSIGNED to KILLED

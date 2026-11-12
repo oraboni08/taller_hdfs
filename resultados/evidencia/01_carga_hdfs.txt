@@ -1,0 +1,40 @@
+
+==================== Creando estructura en HDFS ====================
+2026-11-12 11:07:51,069 INFO sasl.SaslDataTransferClient: SASL encryption trust check: localHostTrusted = false, remoteHostTrusted = false
+2026-11-12 11:08:13,125 INFO sasl.SaslDataTransferClient: SASL encryption trust check: localHostTrusted = false, remoteHostTrusted = false
+2026-11-12 11:08:15,688 INFO sasl.SaslDataTransferClient: SASL encryption trust check: localHostTrusted = false, remoteHostTrusted = false
+2026-11-12 11:08:52,071 INFO sasl.SaslDataTransferClient: SASL encryption trust check: localHostTrusted = false, remoteHostTrusted = false
+2026-11-12 11:08:53,575 INFO sasl.SaslDataTransferClient: SASL encryption trust check: localHostTrusted = false, remoteHostTrusted = false
+2026-11-12 11:08:54,551 INFO sasl.SaslDataTransferClient: SASL encryption trust check: localHostTrusted = false, remoteHostTrusted = false
+2026-11-12 11:08:59,444 INFO sasl.SaslDataTransferClient: SASL encryption trust check: localHostTrusted = false, remoteHostTrusted = false
+2026-11-12 11:09:01,156 INFO sasl.SaslDataTransferClient: SASL encryption trust check: localHostTrusted = false, remoteHostTrusted = false
+2026-11-12 11:09:01,724 INFO sasl.SaslDataTransferClient: SASL encryption trust check: localHostTrusted = false, remoteHostTrusted = false
+2026-11-12 11:09:02,401 INFO sasl.SaslDataTransferClient: SASL encryption trust check: localHostTrusted = false, remoteHostTrusted = false
+drwxr-xr-x   - root supergroup          0 2026-11-12 11:07 /taller/input
+drwxr-xr-x   - root supergroup          0 2026-11-12 11:09 /taller/input/logs
+-rw-r--r--   2 root supergroup   14322599 2026-11-12 11:09 /taller/input/logs/logs_servidor.log
+drwxr-xr-x   - root supergroup          0 2026-11-12 11:08 /taller/input/resenas
+-rw-r--r--   2 root supergroup   11738116 2026-11-12 11:08 /taller/input/resenas/resenas.txt
+drwxr-xr-x   - root supergroup          0 2026-11-12 11:08 /taller/input/ventas
+-rw-r--r--   2 root supergroup    8941651 2026-11-12 11:08 /taller/input/ventas/ventas.csv
+drwxr-xr-x   - root supergroup          0 2026-11-12 11:07 /taller/output
+
+==================== Bloques y réplicas (hdfs fsck) ====================
+/taller/input/logs/logs_servidor.log 14322599 bytes, replicated: replication=2, 4 block(s):  OK
+0. blk_1073741831 len=4194304 Live_repl=2  [172.20.0.2, 172.20.0.4]
+1. blk_1073741832 len=4194304 Live_repl=2  [172.20.0.4, 172.20.0.2]
+2. blk_1073741833 len=4194304 Live_repl=2  [172.20.0.4, 172.20.0.2]
+3. blk_1073741834 len=1739687 Live_repl=2  [172.20.0.4, 172.20.0.2]
+/taller/input/resenas/resenas.txt 11738116 bytes, replicated: replication=2, 3 block(s):  OK
+0. blk_1073741828 len=4194304 Live_repl=2  [172.20.0.2, 172.20.0.4]
+1. blk_1073741829 len=4194304 Live_repl=2  [172.20.0.4, 172.20.0.2]
+2. blk_1073741830 len=3349508 Live_repl=2  [172.20.0.4, 172.20.0.2]
+/taller/input/ventas/ventas.csv 8941651 bytes, replicated: replication=2, 3 block(s):  OK
+0. blk_1073741825 len=4194304 Live_repl=2  [172.20.0.4, 172.20.0.2]
+1. blk_1073741826 len=4194304 Live_repl=2  [172.20.0.4, 172.20.0.2]
+2. blk_1073741827 len=553043 Live_repl=2  [172.20.0.2, 172.20.0.4]
+ Total blocks (validated):	10 (avg. block size 3500236 B)
+ Under-replicated blocks:	0 (0.0 %)
+ Average block replication:	2.0
+ Missing blocks:		0
+The filesystem under path '/taller/input' is HEALTHY
